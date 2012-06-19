@@ -36,6 +36,7 @@ describe the corresponding atom or bond.
 """
 
 import cython
+import logging
 import os
 import re
 import element as elements
@@ -58,6 +59,7 @@ class Atom(Vertex):
     `spinMultiplicity`  ``short``           The spin multiplicity of the atom
     `charge`            ``short``           The formal charge of the atom
     `label`             ``str``             A string label that can be used to tag individual atoms
+    `coords`
     =================== =================== ====================================
 
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
@@ -76,6 +78,7 @@ class Atom(Vertex):
         self.charge = charge
         self.label = label
         self.atomType = None
+        self.coords = list()
 
     def __str__(self):
         """
@@ -196,6 +199,7 @@ class Atom(Vertex):
         """
         a = Atom(self.element, self.radicalElectrons, self.spinMultiplicity, self.charge, self.label)
         a.atomType = self.atomType
+        a.coords = self.coords[:]
         return a
 
     def isHydrogen(self):
@@ -1176,4 +1180,3 @@ class Molecule(Graph):
         adjlist = self.toAdjacencyList(removeH=True)
         url += "{0}".format(re.sub('\s+', '%20', adjlist.replace('\n', ';')))
         return url.strip('_')
-        

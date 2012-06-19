@@ -39,6 +39,7 @@ cdef class Atom(Vertex):
     cdef public short charge
     cdef public str label
     cdef public AtomType atomType
+    cdef public list coords
 
     cpdef bint equivalent(self, Vertex other) except -2
 
@@ -78,6 +79,8 @@ cdef class Molecule(Graph):
 
     cdef public bint implicitHydrogens
     cdef public int symmetryNumber
+    cdef public object rdMol
+    cdef public int rdMolConfId
 
     cpdef addAtom(self, Atom atom)
 
