@@ -13,3 +13,5 @@ dependencies:
   - nose
   - rmg::lpsolve55
   - rmg::quantities
+  - scipy
+  - scikit-learn

@@ -1,0 +1,3 @@
+# Install RMG
+make install
+

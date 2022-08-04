@@ -54,10 +54,10 @@ from molecule.exceptions import SpeciesError, StatmechError
 from molecule.molecule.graph import Graph
 from molecule.molecule.molecule import Atom, Bond, Molecule
 from molecule.molecule.fragment import CuttingLabel, Fragment
-# from rmgpy.pdep import SingleExponentialDown
-# from rmgpy.statmech.conformer import Conformer
-#from rmgpy.thermo import Wilhoit, NASA, ThermoData
-#from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
+# from molecule.pdep import SingleExponentialDown
+# from molecule.statmech.conformer import Conformer
+from molecule.thermo import Wilhoit, NASA, ThermoData
+from molecule.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
 
 #: This dictionary is used to add multiplicity to species label
 _multiplicity_labels = {1: 'S', 2: 'D', 3: 'T', 4: 'Q', 5: 'V', }
@@ -408,7 +408,7 @@ class Species(object):
         """
         Return the chemkin-formatted string for this species.
         """
-        from rmgpy.chemkin import get_species_identifier
+        from molecule.chemkin import get_species_identifier
         return get_species_identifier(self)
 
     def to_cantera(self, use_chemkin_identifier=False):
@@ -745,37 +745,37 @@ class Species(object):
                 return cand[0]
         return candidates[0][0]
 
-    # def get_thermo_data(self, solvent_name=''):
-    #     """
-    #     Returns a `thermoData` object of the current Species object.
-    #
-    #     If the thermo object already exists, it is either of the (Wilhoit, ThermoData)
-    #     type, or it is a Future.
-    #
-    #     If the type of the thermo attribute is Wilhoit, or ThermoData,
-    #     then it is converted into a NASA format.
-    #
-    #     If it is a Future, then a blocking call is made to retrieve the NASA object.
-    #     If the thermo object did not exist yet, the thermo object is generated.
-    #     """
-    #
-    #     from rmgpy.thermo.thermoengine import submit
-    #
-    #     if self.thermo:
-    #         if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
-    #             self.thermo = self.thermo.result()
-    #     else:
-    #         submit(self, solvent_name)
-    #         if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
-    #             self.thermo = self.thermo.result()
-    #
-    #     return self.thermo
+    def get_thermo_data(self, solvent_name=''):
+        """
+        Returns a `thermoData` object of the current Species object.
+
+        If the thermo object already exists, it is either of the (Wilhoit, ThermoData)
+        type, or it is a Future.
+
+        If the type of the thermo attribute is Wilhoit, or ThermoData,
+        then it is converted into a NASA format.
+
+        If it is a Future, then a blocking call is made to retrieve the NASA object.
+        If the thermo object did not exist yet, the thermo object is generated.
+        """
+
+        from molecule.thermo.thermoengine import submit
+
+        if self.thermo:
+            if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
+                self.thermo = self.thermo.result()
+        else:
+            submit(self, solvent_name)
+            if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
+                self.thermo = self.thermo.result()
+
+        return self.thermo
 
     def generate_transport_data(self):
         """
         Generate the transport_data parameters for the species.
         """
-        from rmgpy.data.rmg import get_db
+        from molecule.data.rmg import get_db
         try:
             transport_db = get_db('transport')
             if not transport_db: raise Exception
@@ -809,7 +809,7 @@ class Species(object):
         :meth:`generate_thermo_data()`.
         """
         logging.debug("Generating statmech for species {}".format(self.label))
-        from rmgpy.data.rmg import get_db
+        from molecule.data.rmg import get_db
         try:
             statmech_db = get_db('statmech')
             if not statmech_db: raise Exception
@@ -841,7 +841,7 @@ class Species(object):
         else:
             if not self.thermo.Cp0 or not self.thermo.CpInf:
                 # set Cp0 and CpInf
-                from rmgpy.data.thermo import find_cp0_and_cpinf
+                from molecule.data.thermo import find_cp0_and_cpinf
                 find_cp0_and_cpinf(self, self.thermo)
             self.conformer.E0 = self.get_thermo_data().to_wilhoit().E0
 

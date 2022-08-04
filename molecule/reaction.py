@@ -51,15 +51,15 @@ import numpy as np
 
 import molecule.constants as constants
 from molecule.exceptions import ReactionError, KineticsError
-# from rmgpy.kinetics import KineticsData, ArrheniusBM, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, \
-#     PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, get_rate_coefficient_units_from_reaction_order, \
-#     SurfaceArrheniusBEP, StickingCoefficientBEP
-#from rmgpy.kinetics.arrhenius import Arrhenius  # Separate because we cimport from rmgpy.kinetics.arrhenius
-#from rmgpy.kinetics.surface import SurfaceArrhenius, StickingCoefficient  # Separate because we cimport from rmgpy.kinetics.surface
-#from rmgpy.kinetics.diffusionLimited import diffusion_limiter
+from molecule.kinetics import KineticsData, ArrheniusBM, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, \
+    PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, get_rate_coefficient_units_from_reaction_order, \
+    SurfaceArrheniusBEP, StickingCoefficientBEP
+from molecule.kinetics.arrhenius import Arrhenius  # Separate because we cimport from molecule.kinetics.arrhenius
+from molecule.kinetics.surface import SurfaceArrhenius, StickingCoefficient  # Separate because we cimport from molecule.kinetics.surface
+from molecule.kinetics.diffusionLimited import diffusion_limiter
 from molecule.molecule.element import Element, element_list
 from molecule.molecule.molecule import Molecule, Atom
-#from rmgpy.pdep.reaction import calculate_microcanonical_rate_coefficient
+#from molecule.pdep.reaction import calculate_microcanonical_rate_coefficient
 from molecule.species import Species
 
 ################################################################################
@@ -239,11 +239,11 @@ class Reaction:
         be returned (requires the `species_list` to figure out third body colliders.)
         Otherwise, only the reaction string will be returned.
         """
-        import rmgpy.chemkin
+        import molecule.chemkin
         if kinetics:
-            return rmgpy.chemkin.write_kinetics_entry(self, species_list)
+            return molecule.chemkin.write_kinetics_entry(self, species_list)
         else:
-            return rmgpy.chemkin.write_reaction_string(self)
+            return molecule.chemkin.write_reaction_string(self)
 
     # def to_cantera(self, species_list=None, use_chemkin_identifier=False):
     #     """
@@ -579,7 +579,7 @@ class Reaction:
             number_of_gas_reactants = len([spcs for spcs in self.reactants if not spcs.contains_surface_site()])
             number_of_gas_products = len([spcs for spcs in self.products if not spcs.contains_surface_site()])
         except IndexError:
-            logging.warning("Species do not have an rmgpy.molecule.Molecule "
+            logging.warning("Species do not have an molecule.molecule.Molecule "
                             "Cannot determine phases of species. We will assume "
                             "ideal gas mixture when calculating Kc and Kp.")
             number_of_gas_reactants = len(self.reactants)
@@ -657,157 +657,157 @@ class Reaction:
             if product is spec: stoich += 1
         return stoich
 
-    # def get_rate_coefficient(self, T, P=0, surface_site_density=0):
-    #     """
-    #     Return the overall rate coefficient for the forward reaction at
-    #     temperature `T` in K and pressure `P` in Pa, including any reaction
-    #     path degeneracies.
-    #
-    #     If diffusion_limiter is enabled, the reaction is in the liquid phase and we use
-    #     a diffusion limitation to correct the rate. If not, then use the intrinsic rate
-    #     coefficient.
-    #
-    #     If the reaction has sticking coefficient kinetics, a nonzero surface site density
-    #     in `mol/m^2` must be provided
-    #     """
-    #     if isinstance(self.kinetics, StickingCoefficient):
-    #         if surface_site_density <= 0:
-    #             raise ValueError("Please provide a postive surface site density in mol/m^2 "
-    #                             f"for calculating the rate coefficient of {StickingCoefficient.__name__} kinetics")
-    #         else:
-    #             return self.get_surface_rate_coefficient(T, surface_site_density)
-    #     elif diffusion_limiter.enabled:
-    #         try:
-    #             k = self.k_effective_cache[T]
-    #         except KeyError:
-    #             k = diffusion_limiter.get_effective_rate(self, T)
-    #             self.k_effective_cache[T] = k
-    #         return k
-    #     else:
-    #         return self.kinetics.get_rate_coefficient(T, P)
+    def get_rate_coefficient(self, T, P=0, surface_site_density=0):
+        """
+        Return the overall rate coefficient for the forward reaction at
+        temperature `T` in K and pressure `P` in Pa, including any reaction
+        path degeneracies.
 
-    # def get_surface_rate_coefficient(self, T, surface_site_density):
-    #     """
-    #     Return the overall surface rate coefficient for the forward reaction at
-    #     temperature `T` in K with surface site density `surface_site_density` in mol/m2.
-    #     Value is returned in combination of [m,mol,s]
-    #     """
-    #     cython.declare(rateCoefficient=cython.double,
-    #                    molecularWeight_kg=cython.double, )
-    #
-    #     if diffusion_limiter.enabled:
-    #         raise NotImplementedError()
-    #     if not self.is_surface_reaction():
-    #         raise ReactionError("This is not a surface reaction!")
-    #
-    #     if isinstance(self.kinetics, StickingCoefficient):
-    #         rate_coefficient = self.kinetics.get_sticking_coefficient(T)
-    #         adsorbate = None
-    #         for r in self.reactants:
-    #             if r.contains_surface_site():
-    #                 rate_coefficient /= surface_site_density
-    #             else:
-    #                 if adsorbate is None:
-    #                     adsorbate = r
-    #                 else:
-    #                     logging.error("Error in kinetics for reaction {0!s}: "
-    #                                   "more than one adsorbate detected".format(self))
-    #                     raise ReactionError("More than one adsorbate detected")
-    #
-    #         if adsorbate is None or adsorbate.contains_surface_site():
-    #             logging.error("Problem reaction: {0!s}".format(self))
-    #             raise ReactionError("Couldn't find the adsorbate!")
-    #         molecular_weight_kg = adsorbate.molecular_weight.value_si
-    #         # molecular_weight_kg in kg per molecule
-    #         rate_coefficient *= math.sqrt(constants.kB * T / (2 * math.pi * molecular_weight_kg))
-    #
-    #         # ToDo: missing the sigma terms for bidentate species. only works for single site adsorption
-    #         return rate_coefficient
-    #
-    #     if isinstance(self.kinetics, SurfaceArrhenius):
-    #         return self.kinetics.get_rate_coefficient(T, P=0)
-    #
-    #     raise NotImplementedError("Can't get_surface_rate_coefficient for kinetics type {!r}".format(type(self.kinetics)))
+        If diffusion_limiter is enabled, the reaction is in the liquid phase and we use
+        a diffusion limitation to correct the rate. If not, then use the intrinsic rate
+        coefficient.
 
-    # def fix_diffusion_limited_a_factor(self, T):
-    #     """
-    #     Decrease the pre-exponential factor (A) by the diffusion factor
-    #     to account for the diffusion limit at the specified temperature.
-    #     """
-    #     if not diffusion_limiter.enabled:
-    #         return
-    #     # Obtain effective rate
-    #     try:
-    #         k = self.k_effective_cache[T]
-    #     except KeyError:
-    #         k = diffusion_limiter.get_effective_rate(self, T)
-    #         self.k_effective_cache[T] = k
-    #
-    #     # calculate diffusion factor
-    #     diffusion_factor = k / self.kinetics.get_rate_coefficient(T, P=0)
-    #     # update preexponential factor
-    #     self.kinetics.A = self.kinetics.A * diffusion_factor
-    #     # Add a comment to self.kinetics.comment
-    #     self.kinetics.comment.append(
-    #         ("Pre-exponential factor A has been decreased by the "
-    #          "diffusion factor {0.2g} evaluated at {1} K.").format(
-    #             diffusion_factor, T))
+        If the reaction has sticking coefficient kinetics, a nonzero surface site density
+        in `mol/m^2` must be provided
+        """
+        if isinstance(self.kinetics, StickingCoefficient):
+            if surface_site_density <= 0:
+                raise ValueError("Please provide a postive surface site density in mol/m^2 "
+                                f"for calculating the rate coefficient of {StickingCoefficient.__name__} kinetics")
+            else:
+                return self.get_surface_rate_coefficient(T, surface_site_density)
+        elif diffusion_limiter.enabled:
+            try:
+                k = self.k_effective_cache[T]
+            except KeyError:
+                k = diffusion_limiter.get_effective_rate(self, T)
+                self.k_effective_cache[T] = k
+            return k
+        else:
+            return self.kinetics.get_rate_coefficient(T, P)
 
-    # def fix_barrier_height(self, force_positive=False):
-    #     """
-    #     Turns the kinetics into Arrhenius (if they were ArrheniusEP)
-    #     and ensures the activation energy is at least the endothermicity
-    #     for endothermic reactions, and is not negative only as a result
-    #     of using Evans Polanyi with an exothermic reaction.
-    #     If `force_positive` is True, then all reactions
-    #     are forced to have a non-negative barrier.
-    #     """
-    #     cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double)
-    #
-    #     if self.kinetics is None:
-    #         raise KineticsError("Cannot fix barrier height for reactions with no kinetics attribute")
-    #
-    #     H298 = self.get_enthalpy_of_reaction(298)
-    #     H0 = sum([spec.get_thermo_data().E0.value_si for spec in self.products]) \
-    #          - sum([spec.get_thermo_data().E0.value_si for spec in self.reactants])
-    #     if isinstance(self.kinetics, (ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP, ArrheniusBM)):
-    #         Ea = self.kinetics.E0.value_si  # temporarily using Ea to store the intrinsic barrier height E0
-    #         self.kinetics = self.kinetics.to_arrhenius(H298)
-    #         if self.kinetics.Ea.value_si < 0.0 and self.kinetics.Ea.value_si < Ea:
-    #             # Calculated Ea (from Evans-Polanyi) is negative AND below than the intrinsic E0
-    #             Ea = min(0.0, Ea)  # (the lowest we want it to be)
-    #             self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol.".format(
-    #                 self.kinetics.Ea.value_si / 1000., Ea / 1000.)
-    #             logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(
-    #                 self, self.kinetics.Ea.value_si / 1000., Ea / 1000.))
-    #             self.kinetics.Ea.value_si = Ea
-    #     if isinstance(self.kinetics, (Arrhenius, StickingCoefficient)):  # SurfaceArrhenius is a subclass of Arrhenius
-    #         Ea = self.kinetics.Ea.value_si
-    #         if H0 >= 0 and Ea < H0:
-    #             self.kinetics.Ea.value_si = H0
-    #             self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of " \
-    #                                      "reaction.".format( Ea / 1000., H0 / 1000.)
-    #             logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match "
-    #                          "endothermicity of reaction.".format( Ea / 1000., H0 / 1000., self))
-    #     if force_positive and isinstance(self.kinetics, (Arrhenius, StickingCoefficient)) and self.kinetics.Ea.value_si < 0:
-    #         self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si / 1000.)
-    #         logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(
-    #             self.kinetics.Ea.value_si / 1000., self))
-    #         self.kinetics.Ea.value_si = 0
-    #     if self.kinetics.is_pressure_dependent() and self.network_kinetics is not None:
-    #         Ea = self.network_kinetics.Ea.value_si
-    #         if H0 >= 0 and Ea < H0:
-    #             self.network_kinetics.Ea.value_si = H0
-    #             self.network_kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of" \
-    #                                              " reaction.".format(Ea / 1000., H0 / 1000.)
-    #             logging.info("For reaction {2!s}, Ea of the high pressure limit kinetics raised from {0:.1f} to {1:.1f}"
-    #                          " kJ/mol to match endothermicity of reaction.".format(Ea / 1000., H0 / 1000., self))
-    #         if force_positive and isinstance(self.kinetics, Arrhenius) and self.kinetics.Ea.value_si < 0:
-    #             self.network_kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(
-    #                 self.kinetics.Ea.value_si / 1000.)
-    #             logging.info("For reaction {1!s} Ea of the high pressure limit kinetics raised from {0:.1f} to 0"
-    #                          " kJ/mol.".format(self.kinetics.Ea.value_si / 1000., self))
-    #             self.kinetics.Ea.value_si = 0
+    def get_surface_rate_coefficient(self, T, surface_site_density):
+        """
+        Return the overall surface rate coefficient for the forward reaction at
+        temperature `T` in K with surface site density `surface_site_density` in mol/m2.
+        Value is returned in combination of [m,mol,s]
+        """
+        cython.declare(rateCoefficient=cython.double,
+                       molecularWeight_kg=cython.double, )
+
+        if diffusion_limiter.enabled:
+            raise NotImplementedError()
+        if not self.is_surface_reaction():
+            raise ReactionError("This is not a surface reaction!")
+
+        if isinstance(self.kinetics, StickingCoefficient):
+            rate_coefficient = self.kinetics.get_sticking_coefficient(T)
+            adsorbate = None
+            for r in self.reactants:
+                if r.contains_surface_site():
+                    rate_coefficient /= surface_site_density
+                else:
+                    if adsorbate is None:
+                        adsorbate = r
+                    else:
+                        logging.error("Error in kinetics for reaction {0!s}: "
+                                      "more than one adsorbate detected".format(self))
+                        raise ReactionError("More than one adsorbate detected")
+
+            if adsorbate is None or adsorbate.contains_surface_site():
+                logging.error("Problem reaction: {0!s}".format(self))
+                raise ReactionError("Couldn't find the adsorbate!")
+            molecular_weight_kg = adsorbate.molecular_weight.value_si
+            # molecular_weight_kg in kg per molecule
+            rate_coefficient *= math.sqrt(constants.kB * T / (2 * math.pi * molecular_weight_kg))
+
+            # ToDo: missing the sigma terms for bidentate species. only works for single site adsorption
+            return rate_coefficient
+
+        if isinstance(self.kinetics, SurfaceArrhenius):
+            return self.kinetics.get_rate_coefficient(T, P=0)
+
+        raise NotImplementedError("Can't get_surface_rate_coefficient for kinetics type {!r}".format(type(self.kinetics)))
+
+    def fix_diffusion_limited_a_factor(self, T):
+        """
+        Decrease the pre-exponential factor (A) by the diffusion factor
+        to account for the diffusion limit at the specified temperature.
+        """
+        if not diffusion_limiter.enabled:
+            return
+        # Obtain effective rate
+        try:
+            k = self.k_effective_cache[T]
+        except KeyError:
+            k = diffusion_limiter.get_effective_rate(self, T)
+            self.k_effective_cache[T] = k
+
+        # calculate diffusion factor
+        diffusion_factor = k / self.kinetics.get_rate_coefficient(T, P=0)
+        # update preexponential factor
+        self.kinetics.A = self.kinetics.A * diffusion_factor
+        # Add a comment to self.kinetics.comment
+        self.kinetics.comment.append(
+            ("Pre-exponential factor A has been decreased by the "
+             "diffusion factor {0.2g} evaluated at {1} K.").format(
+                diffusion_factor, T))
+
+    def fix_barrier_height(self, force_positive=False):
+        """
+        Turns the kinetics into Arrhenius (if they were ArrheniusEP)
+        and ensures the activation energy is at least the endothermicity
+        for endothermic reactions, and is not negative only as a result
+        of using Evans Polanyi with an exothermic reaction.
+        If `force_positive` is True, then all reactions
+        are forced to have a non-negative barrier.
+        """
+        cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double)
+
+        if self.kinetics is None:
+            raise KineticsError("Cannot fix barrier height for reactions with no kinetics attribute")
+
+        H298 = self.get_enthalpy_of_reaction(298)
+        H0 = sum([spec.get_thermo_data().E0.value_si for spec in self.products]) \
+             - sum([spec.get_thermo_data().E0.value_si for spec in self.reactants])
+        if isinstance(self.kinetics, (ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP, ArrheniusBM)):
+            Ea = self.kinetics.E0.value_si  # temporarily using Ea to store the intrinsic barrier height E0
+            self.kinetics = self.kinetics.to_arrhenius(H298)
+            if self.kinetics.Ea.value_si < 0.0 and self.kinetics.Ea.value_si < Ea:
+                # Calculated Ea (from Evans-Polanyi) is negative AND below than the intrinsic E0
+                Ea = min(0.0, Ea)  # (the lowest we want it to be)
+                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol.".format(
+                    self.kinetics.Ea.value_si / 1000., Ea / 1000.)
+                logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(
+                    self, self.kinetics.Ea.value_si / 1000., Ea / 1000.))
+                self.kinetics.Ea.value_si = Ea
+        if isinstance(self.kinetics, (Arrhenius, StickingCoefficient)):  # SurfaceArrhenius is a subclass of Arrhenius
+            Ea = self.kinetics.Ea.value_si
+            if H0 >= 0 and Ea < H0:
+                self.kinetics.Ea.value_si = H0
+                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of " \
+                                         "reaction.".format( Ea / 1000., H0 / 1000.)
+                logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match "
+                             "endothermicity of reaction.".format( Ea / 1000., H0 / 1000., self))
+        if force_positive and isinstance(self.kinetics, (Arrhenius, StickingCoefficient)) and self.kinetics.Ea.value_si < 0:
+            self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si / 1000.)
+            logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(
+                self.kinetics.Ea.value_si / 1000., self))
+            self.kinetics.Ea.value_si = 0
+        if self.kinetics.is_pressure_dependent() and self.network_kinetics is not None:
+            Ea = self.network_kinetics.Ea.value_si
+            if H0 >= 0 and Ea < H0:
+                self.network_kinetics.Ea.value_si = H0
+                self.network_kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of" \
+                                                 " reaction.".format(Ea / 1000., H0 / 1000.)
+                logging.info("For reaction {2!s}, Ea of the high pressure limit kinetics raised from {0:.1f} to {1:.1f}"
+                             " kJ/mol to match endothermicity of reaction.".format(Ea / 1000., H0 / 1000., self))
+            if force_positive and isinstance(self.kinetics, Arrhenius) and self.kinetics.Ea.value_si < 0:
+                self.network_kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(
+                    self.kinetics.Ea.value_si / 1000.)
+                logging.info("For reaction {1!s} Ea of the high pressure limit kinetics raised from {0:.1f} to 0"
+                             " kJ/mol.".format(self.kinetics.Ea.value_si / 1000., self))
+                self.kinetics.Ea.value_si = 0
 
     # def reverse_arrhenius_rate(self, k_forward, reverse_units, Tmin=None, Tmax=None):
     #     """
@@ -879,7 +879,7 @@ class Reaction:
     #     kr = SurfaceArrhenius()
     #     kr.fit_to_data(Tlist, klist, reverse_units, kf.T0.value_si)
     #     return kr
-
+    #
     # def generate_reverse_rate_coefficient(self, network_kinetics=False, Tmin=None, Tmax=None, surface_site_density=0):
     #     """
     #     Generate and return a rate coefficient model for the reverse reaction.
@@ -912,7 +912,7 @@ class Reaction:
     #         surf_prods = [spcs for spcs in self.products if spcs.contains_surface_site()]
     #     except IndexError:
     #         surf_prods = []
-    #         logging.warning(f"Species do not have an rmgpy.molecule.Molecule "
+    #         logging.warning(f"Species do not have an molecule.molecule.Molecule "
     #                         "Cannot determine phases of species. We will assume gas"
     #                         )
     #     n_surf = len(surf_prods)
@@ -1090,8 +1090,8 @@ class Reaction:
         Return ``True`` if the reaction has the same number of each atom on
         each side of the reaction equation, or ``False`` if not.
         """
-        from rmgpy.molecule.element import element_list
-        from rmgpy.molecule.fragment import CuttingLabel, Fragment
+        from molecule.molecule.element import element_list
+        from molecule.molecule.fragment import CuttingLabel, Fragment
 
         cython.declare(reactant_elements=dict, product_elements=dict, molecule=Graph, atom=Vertex, element=Element)
 
@@ -1196,7 +1196,7 @@ class Reaction:
         ``.ps``; of these, the first is a raster format and the remainder are
         vector formats.
         """
-        from rmgpy.molecule.draw import ReactionDrawer
+        from molecule.molecule.draw import ReactionDrawer
         img_format = os.path.splitext(path)[1].lower()[1:]
         ReactionDrawer().draw(self, img_format, path)
 
@@ -1204,7 +1204,7 @@ class Reaction:
         """
         Return a png picture of the reaction, useful for ipython-qtconsole.
         """
-        from rmgpy.molecule.draw import ReactionDrawer
+        from molecule.molecule.draw import ReactionDrawer
         temp_file_name = 'temp_reaction.png'
         ReactionDrawer().draw(self, 'png', temp_file_name)
         png = open(temp_file_name, 'rb').read()
@@ -1317,7 +1317,7 @@ class Reaction:
         resonance for reactants or products that start as Species objects.
         If ``save_order`` is ``True`` the atom order is reset after performing atom isomorphism.
         """
-        from rmgpy.data.kinetics.common import ensure_species
+        from molecule.data.kinetics.common import ensure_species
         # if already species' objects, return none
         if isinstance(self.reactants[0], Species):
             return None

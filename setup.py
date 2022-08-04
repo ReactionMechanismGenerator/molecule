@@ -68,6 +68,15 @@ directives = {
 main_ext_modules = [
     # RMG
     Extension('molecule.rmgobject', ['molecule/rmgobject.pyx']),
+    # Kinetics
+    Extension('molecule.kinetics.arrhenius', ['molecule/kinetics/arrhenius.pyx']),
+    Extension('molecule.kinetics.chebyshev', ['molecule/kinetics/chebyshev.pyx']),
+    Extension('molecule.kinetics.kineticsdata', ['molecule/kinetics/kineticsdata.pyx']),
+    Extension('molecule.kinetics.falloff', ['molecule/kinetics/falloff.pyx']),
+    Extension('molecule.kinetics.model', ['molecule/kinetics/model.pyx']),
+    Extension('molecule.kinetics.tunneling', ['molecule/kinetics/tunneling.pyx']),
+    Extension('molecule.kinetics.surface', ['molecule/kinetics/surface.pyx']),
+    Extension('molecule.kinetics.uncertainties', ['molecule/kinetics/uncertainties.pyx']),
     # Molecules and molecular representations
     Extension('molecule.molecule.atomtype', ['molecule/molecule/atomtype.py'], include_dirs=['.']),
     Extension('molecule.molecule.element', ['molecule/molecule/element.py'], include_dirs=['.']),
@@ -83,11 +92,17 @@ main_ext_modules = [
     Extension('molecule.molecule.resonance', ['molecule/molecule/resonance.py'], include_dirs=['.']),
     Extension('molecule.molecule.pathfinder', ['molecule/molecule/pathfinder.py'], include_dirs=['.']),
     Extension('molecule.molecule.kekulize', ['molecule/molecule/kekulize.pyx'], include_dirs=['.']),
+    # Thermodynamics
+    Extension('molecule.thermo.thermodata', ['molecule/thermo/thermodata.pyx']),
+    Extension('molecule.thermo.model', ['molecule/thermo/model.pyx']),
+    Extension('molecule.thermo.nasa', ['molecule/thermo/nasa.pyx']),
+    Extension('molecule.thermo.wilhoit', ['molecule/thermo/wilhoit.pyx']),
     # Miscellaneous
     Extension('molecule.constants', ['molecule/constants.py'], include_dirs=['.']),
     Extension('molecule.quantity', ['molecule/quantity.py'], include_dirs=['.']),
     Extension('molecule.species', ['molecule/species.py'], include_dirs=['.']),
     Extension('molecule.reaction', ['molecule/reaction.py'], include_dirs=['.']),
+    Extension('molecule.chemkin', ['molecule/chemkin.pyx'], include_dirs=['.']),
 ]
 ################################################################################
 
