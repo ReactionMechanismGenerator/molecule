@@ -38,7 +38,7 @@ import os.path
 from molecule.data.base import ForbiddenStructures
 from molecule.data.kinetics.database import KineticsDatabase
 from molecule.data.solvation import SolvationDatabase
-from molecule.data.statmech import StatmechDatabase
+#from molecule.data.statmech import StatmechDatabase
 from molecule.data.thermo import ThermoDatabase
 from molecule.data.surface import MetalDatabase
 from molecule.data.transport import TransportDatabase
@@ -102,8 +102,8 @@ class RMGDatabase(object):
                            kinetics_families,
                            kinetics_depositories
                            )
-        if not testing:
-            self.load_statmech(os.path.join(path, 'statmech'), statmech_libraries, depository)
+        # if not testing:
+        #     self.load_statmech(os.path.join(path, 'statmech'), statmech_libraries, depository)
 
         if solvation:
             self.load_solvation(os.path.join(path, 'solvation'))
@@ -188,13 +188,13 @@ class RMGDatabase(object):
         self.surface = MetalDatabase()
         self.surface.load(path)
 
-    def load_statmech(self, path, statmech_libraries=None, depository=True):
-        """
-        Load the RMG statmech database from the given `path` on disk, where
-        `path` points to the top-level folder of the RMG statmech database.
-        """
-        self.statmech = StatmechDatabase()
-        self.statmech.load(path, statmech_libraries, depository)
+    # def load_statmech(self, path, statmech_libraries=None, depository=True):
+    #     """
+    #     Load the RMG statmech database from the given `path` on disk, where
+    #     `path` points to the top-level folder of the RMG statmech database.
+    #     """
+    #     self.statmech = StatmechDatabase()
+    #     self.statmech.load(path, statmech_libraries, depository)
 
     def load_old(self, path):
         """
@@ -225,7 +225,7 @@ class RMGDatabase(object):
         self.thermo.save(os.path.join(path, 'thermo'))
         # self.transport.save(os.path.join(path, 'transport')) #Currently no function for saving transport groups
         self.kinetics.save(os.path.join(path, 'kinetics'))
-        self.statmech.save(os.path.join(path, 'statmech'))
+        #self.statmech.save(os.path.join(path, 'statmech'))
         self.solvation.save(os.path.join(path, 'solvation'))
         self.transport.save(os.path.join(path, 'transport'))
 
@@ -263,8 +263,8 @@ def get_db(name=''):
             return database.transport
         elif name == 'solvation':
             return database.solvation
-        elif name == 'statmech':
-            return database.statmech
+        #elif name == 'statmech':
+        #    return database.statmech
         elif name == 'forbidden':
             return database.forbidden_structures
         else:

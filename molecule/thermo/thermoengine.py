@@ -34,7 +34,7 @@ import numpy as np
 
 import molecule.constants as constants
 from molecule.data.rmg import get_db
-from molecule.statmech import Conformer
+#from molecule.statmech import Conformer
 from molecule.thermo import Wilhoit, NASA, ThermoData
 from molecule.molecule import Molecule
 
@@ -72,9 +72,9 @@ def process_thermo_data(spc, thermo0, thermo_class=NASA, solvent_name=''):
         wilhoit.comment += ' + Solvation correction with {} as solvent and solute estimated using {}'.format(solvent_name, solute_data.comment)
 
     # Compute E0 by extrapolation to 0 K
-    if spc.conformer is None:
-        spc.conformer = Conformer()
-    spc.conformer.E0 = wilhoit.E0
+    # if spc.conformer is None:
+    #     spc.conformer = Conformer()
+    # spc.conformer.E0 = wilhoit.E0
 
     # Convert to desired thermo class
     if thermo_class is Wilhoit:

@@ -31,12 +31,12 @@ import os
 import unittest
 
 from external.wip import work_in_progress
-from molecule import settings
-from molecule.data.transport import CriticalPointGroupContribution, TransportDatabase
-from molecule.molecule import Molecule
-from molecule.quantity import Energy, Length
-from molecule.species import Species
-from molecule.transport import TransportData
+from rmgpy import settings
+from rmgpy.data.transport import CriticalPointGroupContribution, TransportDatabase
+from rmgpy.molecule import Molecule
+from rmgpy.quantity import Energy, Length
+from rmgpy.species import Species
+from rmgpy.transport import TransportData
 
 
 ################################################################################
@@ -188,13 +188,13 @@ class TestTransportDatabase(unittest.TestCase):
                                                   11 H u0 p0 {5,S}
                                                   12 H u0 p0 {6,S}
                                                   """)
-
+        
         critical_point = self.database.estimate_critical_properties_via_group_additivity(molecule)
         self.assertIsNotNone(critical_point)
 
     def test_Tb_correction_for_halogens(self):
         """
-        Test that the halogen `Tb` correction is applied to the critical point estimated from
+        Test that the halogen `Tb` correction is applied to the critical point estimated from 
         group additivity
         """
         partial_F_mol1 = Molecule(smiles='CCF') # partially fluorinated without other halogens
