@@ -18,7 +18,7 @@ requirements:
     - numpy
     - openbabel >=3
     - pyrdl
-    - python
+    - python {{ python }}
     - quantities
     - rdkit >=2018
     - scipy
@@ -37,7 +37,7 @@ requirements:
     - openbabel >=3
     - pydot
     - pyrdl
-    - python
+    - python {{ python }}
     - quantities
     - rdkit >=2018
     - scikit-learn
