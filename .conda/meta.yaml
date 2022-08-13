@@ -1,6 +1,6 @@
 # For conda build
 package:
-  name: molecule
+  name: rmgmolecule
   version: 0.1.0
 
 source:
