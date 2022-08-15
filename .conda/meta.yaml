@@ -44,6 +44,8 @@ requirements:
 test:
   imports:
     - molecule
+  commands:
+    - python -c 'from molecule.molecule import Molecule; mol=Molecule().from_smiles("CC")'
 
 about:
   home: https://github.com/ReactionMechanismGenerator/molecule
