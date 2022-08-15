@@ -1,15 +1,16 @@
 name: molecule_env
 channels:
   - defaults
-  - rmg
   - conda-forge
+  - mjohnson541
+  - rmg
 dependencies:
-  - rmg::rdkit >=2020.03.3.0
+  - rdkit >=2020.03.3.0
   - cython >=0.25.2
   - conda-forge::openbabel >= 3
   - cairo
   - cairocffi
-  - rmg::pyrdl
+  - pyrdl
   - nose
   - rmg::lpsolve55
   - rmg::quantities
