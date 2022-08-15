@@ -43,7 +43,7 @@ import molecule.molecule
 import molecule.qm.qmdata as qmdata
 import molecule.qm.symmetry as symmetry
 import molecule.quantity
-import molecule.statmech
+#import molecule.statmech
 import molecule.thermo
 from molecule.qm.qmdata import parse_cclib_data
 from molecule.thermo import ThermoData
@@ -497,62 +497,62 @@ class QMMolecule(object):
         else:
             return 0.
 
-    def calculate_thermo_data(self):
-        """
-        Calculate the thermodynamic properties.
-
-        Stores and returns a ThermoData object as self.thermo.
-        self.qm_data and self.point_group need to be generated before this method is called.
-        """
-        assert self.qm_data, "Need QM Data first in order to calculate thermo."
-        assert self.point_group, "Need Point Group first in order to calculate thermo."
-
-        mass = getattr(self.qm_data, 'molecularMass', None)
-        if mass is None:
-            # If using a cclib that doesn't read molecular mass, for example
-            mass = sum(molecule.molecule.element.get_element(int(a)).mass for a in self.qm_data.atomicNumbers)
-            mass = molecule.quantity.Mass(mass, 'kg/mol')
-        trans = molecule.statmech.IdealGasTranslation(mass=mass)
-        if self.point_group.linear:
-            # there should only be one rotational constant for a linear rotor
-            rotational_constant = molecule.quantity.Frequency(max(self.qm_data.rotationalConstants.value),
-                                                           self.qm_data.rotationalConstants.units)
-            rot = molecule.statmech.LinearRotor(
-                rotationalConstant=rotational_constant,
-                symmetry=self.point_group.symmetry_number,
-            )
-        else:
-            rot = molecule.statmech.NonlinearRotor(
-                rotationalConstant=self.qm_data.rotationalConstants,
-                symmetry=self.point_group.symmetry_number,
-            )
-        # @todo: should we worry about spherical top rotors?
-        vib = molecule.statmech.HarmonicOscillator(frequencies=self.qm_data.frequencies)
-
-        # @todo: We need to extract or calculate E0 somehow from the qmdata
-        E0 = (0, "kJ/mol")
-        self.statesmodel = molecule.statmech.Conformer(E0=E0,
-                                                    modes=[trans, rot, vib],
-                                                    spin_multiplicity=self.qm_data.groundStateDegeneracy)
-
-        # we will use number of atoms from above (alternatively, we could use the chemGraph); this is needed to test whether the species is monoatomic
-        # SI units are J/mol, but converted to kJ/mol for generating the thermo.
-        Hf298 = self.qm_data.energy.value_si / 1000
-
-        S298 = self.statesmodel.get_entropy(298.0)
-        Tdata = [300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0]
-        Cp = [self.statesmodel.get_heat_capacity(T) for T in Tdata]
-        S298 = S298 + self.calculate_chirality_correction()
-        comment = self.qm_data.source or "QM calculation of some sort."
-
-        thermo = ThermoData(
-            Tdata=(Tdata, "K"),
-            Cpdata=(Cp, "J/(mol*K)"),
-            H298=(Hf298, "kJ/mol"),
-            S298=(S298, "J/(mol*K)"),
-            Tmin=(300.0, "K"),
-            Tmax=(2000.0, "K"),
-            comment=comment
-        )
-        self.thermo = thermo
-        return thermo
+    # def calculate_thermo_data(self):
+    #     """
+    #     Calculate the thermodynamic properties.
+    #
+    #     Stores and returns a ThermoData object as self.thermo.
+    #     self.qm_data and self.point_group need to be generated before this method is called.
+    #     """
+    #     assert self.qm_data, "Need QM Data first in order to calculate thermo."
+    #     assert self.point_group, "Need Point Group first in order to calculate thermo."
+    #
+    #     mass = getattr(self.qm_data, 'molecularMass', None)
+    #     if mass is None:
+    #         # If using a cclib that doesn't read molecular mass, for example
+    #         mass = sum(molecule.molecule.element.get_element(int(a)).mass for a in self.qm_data.atomicNumbers)
+    #         mass = molecule.quantity.Mass(mass, 'kg/mol')
+    #     trans = molecule.statmech.IdealGasTranslation(mass=mass)
+    #     if self.point_group.linear:
+    #         # there should only be one rotational constant for a linear rotor
+    #         rotational_constant = molecule.quantity.Frequency(max(self.qm_data.rotationalConstants.value),
+    #                                                        self.qm_data.rotationalConstants.units)
+    #         rot = molecule.statmech.LinearRotor(
+    #             rotationalConstant=rotational_constant,
+    #             symmetry=self.point_group.symmetry_number,
+    #         )
+    #     else:
+    #         rot = molecule.statmech.NonlinearRotor(
+    #             rotationalConstant=self.qm_data.rotationalConstants,
+    #             symmetry=self.point_group.symmetry_number,
+    #         )
+    #     # @todo: should we worry about spherical top rotors?
+    #     vib = molecule.statmech.HarmonicOscillator(frequencies=self.qm_data.frequencies)
+    #
+    #     # @todo: We need to extract or calculate E0 somehow from the qmdata
+    #     E0 = (0, "kJ/mol")
+    #     self.statesmodel = molecule.statmech.Conformer(E0=E0,
+    #                                                 modes=[trans, rot, vib],
+    #                                                 spin_multiplicity=self.qm_data.groundStateDegeneracy)
+    #
+    #     # we will use number of atoms from above (alternatively, we could use the chemGraph); this is needed to test whether the species is monoatomic
+    #     # SI units are J/mol, but converted to kJ/mol for generating the thermo.
+    #     Hf298 = self.qm_data.energy.value_si / 1000
+    #
+    #     S298 = self.statesmodel.get_entropy(298.0)
+    #     Tdata = [300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0]
+    #     Cp = [self.statesmodel.get_heat_capacity(T) for T in Tdata]
+    #     S298 = S298 + self.calculate_chirality_correction()
+    #     comment = self.qm_data.source or "QM calculation of some sort."
+    #
+    #     thermo = ThermoData(
+    #         Tdata=(Tdata, "K"),
+    #         Cpdata=(Cp, "J/(mol*K)"),
+    #         H298=(Hf298, "kJ/mol"),
+    #         S298=(S298, "J/(mol*K)"),
+    #         Tmin=(300.0, "K"),
+    #         Tmax=(2000.0, "K"),
+    #         comment=comment
+    #     )
+    #     self.thermo = thermo
+    #     return thermo
