@@ -171,6 +171,58 @@ class TestGroupAdjLists(unittest.TestCase):
         adjlist2 = group.to_adjacency_list()
 
         self.assertEqual(adjlist.strip(), adjlist2.strip())
+        
+    def test_metal_facet_site_morphology(self):
+        adjlist1 = """metal Cu
+facet 111
+1 *3 X u0 p0 c0 s"atop" m"terrace"  {2,S} {4,S}
+2 *1 O u0 p2 c0 {1,S} {3,R}
+3 *2 H u0 p0 c0 {2,R} {4,R}
+4 *4 X u0 p0 c0 s"hcp" m"terrace" {3,R} {1,S}"""
+        
+        adjlist2 = """multiplicity [1]
+metal [Cu, Fe, CuO2 ]
+facet [111, 211, 1101, 110, ]
+1 *3 X u0 p0 c0 s["atop","fcc"] m"terrace"  {2,S} {4,S}
+2 *1 O u0 p2 c0 {1,S} {3,R}
+3 *2 H u0 p0 c0 {2,R} {4,R}
+4 *4 X u0 p0 c0 s"hcp" m["terrace","sc"] {3,R} {1,S}"""
+        
+        adjlist1test = """metal Cu
+facet 111
+1 *3 X u0 p0 c0 s"atop" m"terrace" {2,S} {4,S}
+2 *1 O u0 p2 c0 {1,S} {3,R}
+3 *2 H u0 p0 c0 {2,R} {4,R}
+4 *4 X u0 p0 c0 s"hcp" m"terrace" {1,S} {3,R}"""
+        
+        adjlist2test = """multiplicity [1]
+metal [Cu,Fe,CuO2]
+facet [111,211,1101,110]
+1 *3 X u0 p0 c0 s["atop","fcc"] m"terrace" {2,S} {4,S}
+2 *1 O u0 p2 c0 {1,S} {3,R}
+3 *2 H u0 p0 c0 {2,R} {4,R}
+4 *4 X u0 p0 c0 s"hcp" m["terrace","sc"] {1,S} {3,R}"""
+        mol = Molecule().from_adjacency_list(adjlist1,check_consistency=False)
+        group = Group().from_adjacency_list(adjlist2)
+        
+        self.assertEqual(mol.metal,"Cu")
+        self.assertEqual(mol.facet,"111")
+        self.assertEqual(group.metal,["Cu","Fe","CuO2"])
+        self.assertEqual(group.facet,["111","211","1101","110"])
+        
+        self.assertEqual(mol.atoms[0].site,"atop")
+        self.assertEqual(mol.atoms[3].site,"hcp")
+        self.assertEqual(mol.atoms[0].morphology, "terrace")
+        self.assertEqual(mol.atoms[3].morphology, "terrace")
+        
+        self.assertEqual(group.atoms[0].site,["atop","fcc"])
+        self.assertEqual(group.atoms[3].site,["hcp"])
+        self.assertEqual(group.atoms[0].morphology, ["terrace"])
+        self.assertEqual(group.atoms[3].morphology,["terrace","sc"])
+        
+        self.assertEqual(mol.to_adjacency_list().strip(),adjlist1test.strip())
+        self.assertEqual(group.to_adjacency_list().strip(), adjlist2test.strip())
+
 
 
 class TestMoleculeAdjLists(unittest.TestCase):
@@ -445,7 +497,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
 
     def test_various_spin_adjlists(self):
         """
-        adjlist: Test that molecules with old or intermediate adjacency list formats containing unusual
+        adjlist: Test that molecules with old or intermediate adjacency list formats containing unusual 
         spin states can get converted to the proper new adjlist format.
         """
 
@@ -493,7 +545,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
 1 N 3Q 1
 """
         adjlist_3q_new = """
-1 N u3 p1 c0
+1 N u3 p1 c0 
 """
         mol_3q = Molecule().from_adjacency_list(adjlist_3q)
         mol_3q_new = Molecule().from_adjacency_list(adjlist_3q_new)
@@ -523,7 +575,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
 1 C 4V 0
 """
         adjlist_4v_new = """
-1 C u4 p0 c0
+1 C u4 p0 c0        
 """
         mol_4v = Molecule().from_adjacency_list(adjlist_4v)
         mol_4v_new = Molecule().from_adjacency_list(adjlist_4v_new)
@@ -672,7 +724,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         Test we can read an old style adjacency list with implicit hydrogens 1
         """
         adjlist = """
-        1 O 0
+        1 O 0 
         """  # should be Water
         molecule = Molecule().from_adjacency_list(adjlist)
         self.assertEqual(molecule.get_formula(), 'H2O')
@@ -742,7 +794,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         molecule_new = Molecule().from_adjacency_list(adjlist_new)
         self.assertTrue(molecule.is_isomorphic(molecule_new))
         # Currently the from_old_adjacency_list cannot correctly interpret CO written in this old form
-        # (I don't think any adjlists are actually formed this way.)
+        # (I don't think any adjlists are actually formed this way.)  
         # Currently 'adjlist' will fail when the Molecule is determined to be non-neurtral in net charge.
 
     def test_from_old_adjacency_list6(self):
@@ -753,7 +805,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
         1 C 4T
         """
         adjlist_new = """
-        1 C u2 p1 c0
+        1 C u2 p1 c0 
         """
         molecule = Molecule().from_adjacency_list(adjlist)
         molecule_new = Molecule().from_adjacency_list(adjlist_new)
@@ -803,7 +855,7 @@ class TestMoleculeAdjLists(unittest.TestCase):
 2 O u1 p1 c[-1,0,+1] {1,D}
 """
         group = Group().from_adjacency_list("""
-        1 C u0 {2,D}
+        1 C u0 {2,D} 
         2 O u1 p1 c[-1,0,+1] {1,D}
         """)
         self.assertEqual(adjlist, group.to_adjacency_list())

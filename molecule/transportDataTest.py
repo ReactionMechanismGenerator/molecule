@@ -33,9 +33,9 @@ This script contains unit test of the :mod: 'rmgpy.transport' module and :mod: '
 
 import unittest
 
-import rmgpy.constants as constants
-from rmgpy.quantity import DipoleMoment, Length, Volume, Energy
-from rmgpy.transport import TransportData
+import molecule.constants as constants
+from molecule.quantity import DipoleMoment, Length, Volume, Energy
+from molecule.transport import TransportData
 
 #################################################################################
 

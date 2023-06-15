@@ -33,10 +33,10 @@ from molecule.quantity cimport ScalarQuantity, ArrayQuantity
 ################################################################################
 
 cdef class KineticsData(KineticsModel):
-
+    
     cdef public ArrayQuantity _Tdata
     cdef public ArrayQuantity _kdata
-
+    
     cpdef double get_rate_coefficient(self, double T, double P=?) except -1
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
@@ -44,11 +44,11 @@ cdef class KineticsData(KineticsModel):
 ################################################################################
 
 cdef class PDepKineticsData(PDepKineticsModel):
-
+    
     cdef public ArrayQuantity _Tdata
     cdef public ArrayQuantity _Pdata
     cdef public ArrayQuantity _kdata
-
+    
     cpdef double get_rate_coefficient(self, double T, double P=?) except -1
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2

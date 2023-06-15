@@ -37,7 +37,7 @@ cdef class Vertex(object):
     cdef public bint terminal
     cdef public Vertex mapping
     cdef public bint ignore
-
+    
     cpdef Vertex copy(self)
 
     cpdef bint equivalent(self, Vertex other, bint strict=?) except -2
@@ -55,7 +55,7 @@ cpdef short get_vertex_sorting_label(Vertex vertex) except -1 # all values shoul
 cdef class Edge(object):
 
     cdef public Vertex vertex1, vertex2
-
+    
     cpdef Edge copy(self)
 
     cpdef bint equivalent(Edge self, Edge other) except -2
@@ -73,7 +73,7 @@ cdef Vertex _get_edge_vertex2(Edge edge)
 cdef class Graph(object):
 
     cdef public list vertices
-
+    
     cdef public list ordered_vertices
 
     cpdef Vertex add_vertex(self, Vertex vertex)
@@ -95,7 +95,7 @@ cdef class Graph(object):
     cpdef remove_edge(self, Edge edge)
 
     cpdef update_connectivity_values(self)
-
+    
     cpdef Graph copy(self, bint deep=?)
 
     cpdef dict copy_and_map(self)
@@ -107,7 +107,7 @@ cdef class Graph(object):
     cpdef reset_connectivity_values(self)
 
     cpdef sort_vertices(self, bint save_order=?)
-
+    
     cpdef restore_vertex_order(self)
 
     cpdef bint is_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?, bint strict=?) except -2
@@ -127,13 +127,13 @@ cdef class Graph(object):
     cpdef bint _is_chain_in_cycle(self, list chain) except -2
 
     cpdef list get_all_cyclic_vertices(self)
-
+    
     cpdef list get_all_polycyclic_vertices(self)
-
+    
     cpdef list get_polycycles(self)
-
+    
     cpdef list get_monocycles(self)
-
+    
     cpdef tuple get_disparate_cycles(self)
 
     cpdef tuple _merge_cycles(self, list cycle_sets)
@@ -153,9 +153,9 @@ cdef class Graph(object):
     cpdef list sort_cyclic_vertices(self, list vertices)
 
     cpdef int get_max_cycle_overlap(self)
-
+    
     cpdef list get_largest_ring(self, Vertex vertex)
-
+    
     cpdef bint is_mapping_valid(self, Graph other, dict mapping, bint equivalent=?, bint strict=?) except -2
 
     cpdef list get_edges_in_cycle(self, list vertices, bint sort=?)

@@ -39,7 +39,7 @@ from molecule.rmgobject import RMGObject
 class VaporLiquidMassTransfer(RMGObject):
     """
     Class for working with coefficients related to vapor liquid mass transfer
-
+    
     The attributes are:
     =========================================================  ===================================================================
     Attribute                                                  Description
@@ -69,7 +69,7 @@ class VaporLiquidMassTransfer(RMGObject):
         prefactor = self.liquid_volumetric_mass_transfer_coefficient_power_law.prefactor
         diffusion_coefficient_power = self.liquid_volumetric_mass_transfer_coefficient_power_law.diffusion_coefficient_power
         solvent_viscosity_power = self.liquid_volumetric_mass_transfer_coefficient_power_law.solvent_viscosity_power
-        solvent_density_power = self.liquid_volumetric_mass_transfer_coefficient_power_law.solvent_density_power
+        solvent_density_power = self.liquid_volumetric_mass_transfer_coefficient_power_law.solvent_density_power 
 
         if not Ts:
             Tmin = solvent_data.get_solvent_coolprop_Tmin()
@@ -88,16 +88,15 @@ class VaporLiquidMassTransfer(RMGObject):
             Tcrit = solvent_data.get_solvent_coolprop_Tcrit()
             Ts = [float(T) for T in np.linspace(Tmin, Tcrit-0.01, 50)]
 
-        # The function `get_T_dep_solvation_energy_from_LSER_298`` returns (delG, Kfactor(T,Psat)), the henry's constant kH and the Kfactor = y/x
-        # can be related by kH(T,P) = lim_{x -> 0} P y/x = lim_{x -> 0} P Kfactor(T,P), and thus kH(T,Psat) = lim_{x -> 0} Psat Kfactor(T,Psat)
-        kHs = [self.database.get_T_dep_solvation_energy_from_LSER_298(solute_data, solvent_data, T)[1]* solvent_data.get_solvent_saturation_pressure(T) for T in Ts]
+        # The function `get_T_dep_solvation_energy_from_LSER_298`` returns (delG, Kfactor(T,Psat), kH(T))
+        kHs = [self.database.get_T_dep_solvation_energy_from_LSER_298(solute_data, solvent_data, T)[2] for T in Ts]
 
         return HenryLawConstantData(Ts=Ts,kHs=kHs)
 
 class LiquidVolumetricMassTransferCoefficientData(RMGObject):
     """
     Sampled liquid volumetric mass transfer coefficients.
-
+    
     The attributes are:
     =================  ============================================================
     Attribute          Description
@@ -128,7 +127,7 @@ class LiquidVolumetricMassTransferCoefficientData(RMGObject):
 class HenryLawConstantData(RMGObject):
     """
     Sampled Henry's law constants.
-
+    
     The attributes are:
     =================  ============================================================
     Attribute          Description
@@ -160,7 +159,7 @@ class liquidVolumetricMassTransferCoefficientPowerLaw(RMGObject):
     Power law coefficients used to calculation liquid volumetric mass transfer coefficient (kLA).
     kLA for species i with solvent solv is calculated by
     kLA_i = prefactor * D_i ^ diffusion_coefficient_power * mu_solv ^ solvent_viscosity_power * rho_solv ^ solvent_density_power
-
+    
     The attributes are:
     =============================  ============================================================
     Attribute                      Description
@@ -170,7 +169,7 @@ class liquidVolumetricMassTransferCoefficientPowerLaw(RMGObject):
     `solvent_viscosity_power`      Power law coefficient for solvent viscosity
     `solvent_density_power`        Power law coefficient for solvent density
     =============================  ============================================================
-
+    
     """
     def __init__(self, prefactor=0, diffusion_coefficient_power=0, solvent_viscosity_power=0, solvent_density_power=0):
         self.prefactor = prefactor

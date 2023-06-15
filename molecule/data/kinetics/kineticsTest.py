@@ -392,7 +392,7 @@ class TestReactionDegeneracy(unittest.TestCase):
     def test_degeneracy_keeps_separate_transition_states_separated(self):
         """
         Test that rxns with multiple transition states are kept as separate reactions
-
+        
         Uses C[C]=C + C=C[CH2] -> C=C=C + C=CC as an example. This reaction should have
         two transition states, which should occur regardless of reactant order.
         """
@@ -409,8 +409,8 @@ class TestReactionDegeneracy(unittest.TestCase):
     def test_separate_transition_states_generated_regardless_of_reactant_order(self):
         """
         ensure rxns with multiple transition states are kept as separate reactions
-
-        this test uses C[C]=C + C=C[CH2] -> C=C=C + C=CC as an example.
+        
+        this test uses C[C]=C + C=C[CH2] -> C=C=C + C=CC as an example. 
         This reaction should have two transition states, which should occur regardless
         of the order .
         """
@@ -446,7 +446,7 @@ class TestReactionDegeneracy(unittest.TestCase):
         test that propyl propyl r-recombination is the same rate as propyl butyl
 
         this test assures that r-recombination reactions from the same rate rule
-        with identical reactants have half the reaction rate since there is a
+        with identical reactants have half the reaction rate since there is a 
         symmetrical transition state.
         """
         family_label = 'R_Recombination'
@@ -488,11 +488,11 @@ class TestReactionDegeneracy(unittest.TestCase):
     def test_identical_reactants_have_similar_kinetics(self):
         """
         tests identical reactants have the same kinetics than different reactants.
-
-        this test assures that r addition multiple bond reactions from the same
-        rate rule have the same reaction rate if the reactants are identicaal
-        since little changes in the reactant or transition state symmetry.
-
+        
+        this test assures that r addition multiple bond reactions from the same 
+        rate rule have the same reaction rate if the reactants are identicaal 
+        since little changes in the reactant or transition state symmetry. 
+        
         This method should be more robust than just checking
         the degeneracy of reactions.
         """
@@ -538,7 +538,7 @@ class TestReactionDegeneracy(unittest.TestCase):
     def test_reaction_degeneracy_independent_of_generatereactions_direction(self):
         """
         test_reaction_degeneracy_independent_of_generatereactions_direction
-
+        
         Ensure the returned kinetics have the same degeneracy irrespective of
         whether _generate_reactions has forward = True or False
         """
@@ -712,7 +712,7 @@ class TestKineticsCommentsParsing(unittest.TestCase):
         self.assertAlmostEqual(reactions[3].kinetics.A.value_si, A)
         self.assertAlmostEqual(reactions[3].kinetics.n.value_si, n)
 
-        # Source 3 comes from a pdep reaction
+        # Source 3 comes from a pdep reaction        
         self.assertTrue('PDep' in sources[4])
         self.assertEqual(sources[4]['PDep'], 7)
 

@@ -403,7 +403,7 @@ def test_isomorphism_mol_group_not_identical():
 
 def test_isomorphism_group_group():
     """
-    Testing multiplicities in group vs. group
+    Testing multiplicities in group vs. group 
     """
     gp1 = Group().from_adjacency_list("""
     1 R u0 p0 c0
@@ -531,7 +531,7 @@ def test_isomorphism_wrong_mapping():
         """)
     assert_false(n1butane.is_isomorphic(n2butane))
     assert_false(n1butane.is_isomorphic(n2butane, generate_initial_map=True))
-
+    
     mapping = {}
     for label in ['*1', '*2', '*3', '*4']:
         mapping[n1butane.get_labeled_atoms(label)[0]] = n2butane.get_labeled_atoms(label)[0]

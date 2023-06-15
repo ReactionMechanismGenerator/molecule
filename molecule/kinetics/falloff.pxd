@@ -32,39 +32,39 @@ from molecule.quantity cimport ScalarQuantity, ArrayQuantity
 ################################################################################
 
 cdef class ThirdBody(PDepKineticsModel):
-
+    
     cdef public Arrhenius arrheniusLow
-
+    
     cpdef double get_rate_coefficient(self, double T, double P=?) except -1
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
-
+    
     cpdef change_rate(self, double factor)
 
 ################################################################################
 
 cdef class Lindemann(PDepKineticsModel):
-
+    
     cdef public Arrhenius arrheniusHigh
     cdef public Arrhenius arrheniusLow
-
+    
     cpdef double get_rate_coefficient(self, double T, double P=?) except -1
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
-
+    
     cpdef change_rate(self, double factor)
 
 ################################################################################
 
 cdef class Troe(PDepKineticsModel):
-
+    
     cdef public Arrhenius arrheniusHigh
     cdef public Arrhenius arrheniusLow
     cdef public double alpha
     cdef public ScalarQuantity _T1, _T2, _T3
-
+    
     cpdef double get_rate_coefficient(self, double T, double P=?) except -1
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
-
+    
     cpdef change_rate(self, double factor)

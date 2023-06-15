@@ -41,7 +41,7 @@ def get_element_count(obj):
     if isinstance(obj, str):
         assert 'InChI=1' in obj
         mf = obj.split('/')[1]
-        pieces = re.findall('[A-Z][^A-Z]*', mf)  # split on capital letters
+        pieces = re.findall(r'[A-Z][^A-Z]*', mf)  # split on capital letters
 
         for piece in pieces:
             match = re.match(r"([a-z]+)([0-9]*)", piece, re.I)
@@ -70,10 +70,10 @@ def get_element_count(obj):
 
 def partition(sample, list_of_samples):
     """
-    Group indices from the parameter sample
+    Group indices from the parameter sample 
     that belong to the same list.
 
-    Returns a list of lists with partitioned indices, and
+    Returns a list of lists with partitioned indices, and 
     a list of lists with the corresponding sample list they were found in.
 
     E.g.:
@@ -81,7 +81,7 @@ def partition(sample, list_of_samples):
     list_of_samples : [[1,2,3,4],[5,6]]
     returns: [[1,3]], [[1,2,3,4]]
 
-    Indices not part of any of the lists should be in singleton list and
+    Indices not part of any of the lists should be in singleton list and 
     have corresponding empty list:
 
     E.g.:
@@ -160,15 +160,15 @@ def generate_combo(samples, sample_spaces):
 def swap(to_be_swapped, sample):
     """
     Identifies which index of the list samples  is present in
-    the list to be swapped.
+    the list to be swapped. 
 
     E.g.:
     to be swapped: [2,3]
     sample: [1,3]
 
-    Returns:
+    Returns: 
     1, 3, 2
-
+    
     """
 
     to_be_swapped = set(to_be_swapped)

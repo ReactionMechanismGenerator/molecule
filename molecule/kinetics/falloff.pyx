@@ -55,7 +55,7 @@ cdef class ThirdBody(PDepKineticsModel):
     `efficiencies`      A dict associating chemical species with associated efficiencies
     `comment`           Information about the model (e.g. its source)
     =================== ========================================================
-
+    
     """
 
     def __init__(self, arrheniusLow=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, efficiencies=None, comment=''):
@@ -220,17 +220,29 @@ cdef class Lindemann(PDepKineticsModel):
         self.arrheniusLow.change_rate(factor)
         self.arrheniusHigh.change_rate(factor)
 
+
+
     def set_cantera_kinetics(self, ct_reaction, species_list):
         """
         Sets the efficiencies and kinetics for a cantera reaction.
         """
         import cantera as ct
-        assert isinstance(ct_reaction, ct.FalloffReaction), "Must be a Cantera FalloffReaction object"
+        assert isinstance(ct_reaction.rate, ct.LindemannRate), "Must have a Cantera LindemannRate attribute"
 
         ct_reaction.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
-        ct_reaction.high_rate = self.arrheniusHigh.to_cantera_kinetics()
-        ct_reaction.low_rate = self.arrheniusLow.to_cantera_kinetics()
-        ct_reaction.falloff = ct.Falloff()
+        ct_reaction.rate = self.to_cantera_kinetics() 
+        
+
+    def to_cantera_kinetics(self): 
+        """
+        Converts the Lindemann object to a cantera LindemannRate object
+        """
+        import cantera as ct
+
+        high_rate = self.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
+        low_rate = self.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
+        return ct.LindemannRate(low=low_rate, high=high_rate)
+
 
 ################################################################################
 
@@ -347,7 +359,7 @@ cdef class Troe(PDepKineticsModel):
             d = 0.14
             n = 0.75 - 1.27 * log10(Fcent)
             c = -0.4 - 0.67 * log10(Fcent)
-            F = 10.0 ** (log10(Fcent) / (1 + ((log10(Pr) + c) / (n - d * (log10(Pr)))) ** 2))
+            F = 10.0 ** (log10(Fcent) / (1 + ((log10(Pr) + c) / (n - d * (log10(Pr) + c))) ** 2))
 
         return kinf * (Pr / (1 + Pr)) * F
 
@@ -389,15 +401,30 @@ cdef class Troe(PDepKineticsModel):
         """
         import cantera as ct
 
-        assert isinstance(ct_reaction, ct.FalloffReaction), "Must be a Cantera FalloffReaction object"
+        assert isinstance(ct_reaction.rate, ct.TroeRate), "Must have a Cantera TroeRate attribute"
+
         ct_reaction.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
-        ct_reaction.high_rate = self.arrheniusHigh.to_cantera_kinetics()
-        ct_reaction.low_rate = self.arrheniusLow.to_cantera_kinetics()
+
+        ct_reaction.rate = self.to_cantera_kinetics() 
+
+    def to_cantera_kinetics(self): 
+        """
+        Converts the Troe object to a cantera Troe object
+        """
+        import cantera as ct
         A = self.alpha
         T3 = self.T3.value_si
         T1 = self.T1.value_si
         if self.T2 is None:
-            ct_reaction.falloff = ct.TroeFalloff(params=[A, T3, T1])
+            falloff = [A, T3, T1]
         else:
             T2 = self.T2.value_si
-            ct_reaction.falloff = ct.TroeFalloff(params=[A, T3, T1, T2])
+            falloff = [A, T3, T1, T2]
+        
+        high = self.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
+        low = self.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
+        return ct.TroeRate(high=high, low=low, falloff_coeffs=falloff)
+        
+    
+
+        

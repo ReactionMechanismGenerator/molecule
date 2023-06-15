@@ -31,12 +31,12 @@ import os
 import unittest
 
 from external.wip import work_in_progress
-from rmgpy import settings
-from rmgpy.data.transport import CriticalPointGroupContribution, TransportDatabase
-from rmgpy.molecule import Molecule
-from rmgpy.quantity import Energy, Length
-from rmgpy.species import Species
-from rmgpy.transport import TransportData
+from molecule import settings
+from molecule.data.transport import CriticalPointGroupContribution, TransportDatabase
+from molecule.molecule import Molecule
+from molecule.quantity import Energy, Length
+from molecule.species import Species
+from molecule.transport import TransportData
 
 
 ################################################################################

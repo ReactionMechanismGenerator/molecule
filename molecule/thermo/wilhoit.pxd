@@ -35,14 +35,14 @@ from molecule.quantity cimport ScalarQuantity, ArrayQuantity
 ################################################################################
 
 cdef class Wilhoit(HeatCapacityModel):
-
+    
     cdef public ScalarQuantity _B, _H0, _S0
     cdef public double a0, a1, a2, a3
 
     cpdef dict as_dict(self)
 
     cpdef make_object(self, dict data, dict class_dict)
-
+    
     cpdef double get_heat_capacity(self, double T) except -1000000000
 
     cpdef double get_enthalpy(self, double T) except 1000000000
@@ -50,25 +50,25 @@ cdef class Wilhoit(HeatCapacityModel):
     cpdef double get_entropy(self, double T) except -1000000000
 
     cpdef double get_free_energy(self, double T) except 1000000000
-
+    
     cpdef Wilhoit copy(self)
-
+    
     cdef double integral_T0(self, double T)
-
+    
     cdef double integral_TM1(self, double T)
-
+    
     cdef double integral_T1(self, double T)
-
+    
     cdef double integral_T2(self, double T)
-
+    
     cdef double integral_T3(self, double T)
-
+    
     cdef double integral_T4(self, double T)
-
+    
     cdef double integral2_T0(self, double T)
-
+    
     cdef double integral2_TM1(self, double T)
-
+    
     cpdef ThermoData to_thermo_data(self)
 
     cpdef NASA to_nasa(self, double Tmin, double Tmax, double Tint, bint fixedTint=?, bint weighting=?, int continuity=?)

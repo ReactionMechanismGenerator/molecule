@@ -34,7 +34,7 @@ from molecule.molecule.element cimport Element
 from molecule.molecule.graph cimport Vertex, Edge, Graph
 
 ################################################################################
-cdef dict bond_orders
+cdef dict bond_orders 
 
 cdef class Atom(Vertex):
 
@@ -45,9 +45,11 @@ cdef class Atom(Vertex):
     cdef public AtomType atomtype
     cdef public np.ndarray coords
     cdef public short lone_pairs
+    cdef public str site 
+    cdef public str morphology
     cdef public int id
     cdef public dict props
-
+    
     cpdef bint equivalent(self, Vertex other, bint strict=?) except -2
 
     cpdef bint is_specific_case_of(self, Vertex other) except -2
@@ -87,19 +89,19 @@ cdef class Atom(Vertex):
     cpdef increment_radical(self)
 
     cpdef decrement_radical(self)
-
+    
     cpdef set_lone_pairs(self, int lone_pairs)
-
+    
     cpdef increment_lone_pairs(self)
-
+    
     cpdef decrement_lone_pairs(self)
-
+    
     cpdef update_charge(self)
 
     cpdef get_total_bond_order(self)
-
+    
 ################################################################################
-
+    
 cdef class Bond(Edge):
 
     cdef public float order
@@ -109,15 +111,15 @@ cdef class Bond(Edge):
     cpdef bint is_specific_case_of(self, Edge other) except -2
 
     cpdef str get_order_str(self)
-
+    
     cpdef set_order_str(self, str new_order)
-
+    
     cpdef float get_order_num(self)
-
+    
     cpdef set_order_num(self, float new_order)
 
     cpdef Edge copy(self)
-
+    
     cpdef bint is_order(self, float other_order)
 
     cpdef bint is_van_der_waals(self) except -2
@@ -127,9 +129,9 @@ cdef class Bond(Edge):
     cpdef bint is_double(self) except -2
 
     cpdef bint is_triple(self) except -2
-
+    
     cpdef bint is_quadruple(self) except -2
-
+    
     cpdef bint is_benzene(self) except -2
 
     cpdef increment_order(self)
@@ -146,6 +148,8 @@ cdef class Molecule(Graph):
     cdef public int multiplicity
     cdef public bint reactive
     cdef public dict props
+    cdef public str metal
+    cdef public str facet
     cdef str _fingerprint
     cdef str _inchi
     cdef str _smiles
@@ -163,7 +167,7 @@ cdef class Molecule(Graph):
     cpdef bint has_bond(self, Atom atom1, Atom atom2)
 
     cpdef bint contains_surface_site(self)
-
+    
     cpdef bint is_surface_site(self)
 
     cpdef remove_atom(self, Atom atom)
@@ -173,7 +177,7 @@ cdef class Molecule(Graph):
     cpdef remove_van_der_waals_bonds(self)
 
     cpdef sort_atoms(self)
-
+    
     cpdef str get_formula(self)
 
     cpdef short get_radical_count(self)
@@ -217,10 +221,10 @@ cdef class Molecule(Graph):
     cpdef from_smiles(self, str smilesstr, backend=?, bint raise_atomtype_exception=?)
 
     cpdef from_adjacency_list(self, str adjlist, bint saturate_h=?, bint raise_atomtype_exception=?,
-                              bint raise_charge_exception=?)
+                              bint raise_charge_exception=?, bint check_consistency=?)
 
     cpdef from_xyz(self, np.ndarray atomic_nums, np.ndarray coordinates, float critical_distance_factor=?, bint raise_atomtype_exception=?)
-
+    
     cpdef str to_inchi(self)
 
     cpdef str to_augmented_inchi(self)
@@ -251,7 +255,7 @@ cdef class Molecule(Graph):
 
     cpdef bint has_halogen(self) except -2
 
-    cpdef bint is_aryl_radical(self, list aromatic_rings=?) except -2
+    cpdef bint is_aryl_radical(self, list aromatic_rings=?, bint save_order=?) except -2
 
     cpdef float calculate_symmetry_number(self) except -1
 
@@ -267,7 +271,7 @@ cdef class Molecule(Graph):
 
     cpdef int count_aromatic_rings(self)
 
-    cpdef tuple get_aromatic_rings(self, list rings=?)
+    cpdef tuple get_aromatic_rings(self, list rings=?, bint save_order=?)
 
     cpdef list get_deterministic_sssr(self)
 

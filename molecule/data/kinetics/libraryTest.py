@@ -32,6 +32,7 @@ import os.path
 import shutil
 import unittest
 
+import molecule
 from molecule import settings
 from molecule.data.kinetics.database import KineticsDatabase
 from molecule.data.kinetics.family import TemplateReaction
@@ -73,7 +74,7 @@ class TestLibrary(unittest.TestCase):
 
     def test_save_library(self):
         """
-        This tests the the library.save method by writing a new temporary file and
+        This tests the library.save method by writing a new temporary file and
         loading it and comparing the original and copied reactions
         """
         for library_name in ['ethane-oxidation', 'surface-example']:
@@ -94,10 +95,22 @@ class TestLibrary(unittest.TestCase):
                 for i in range(len(original_rxns)):
                     if repr(original_rxns[i]).strip() != repr(copy_rxns[i]).strip(): # if it's representation looks different...
                         self.assertIsInstance(copy_rxns[i], TemplateReaction) # ...it must be a TemplateReaction
-                    #Todo: we need to check more carefully for equivalence,
+                    #Todo: we need to check more carefully for equivalence, 
                     # eg. is the metal attribute saved for surface reactions?
             finally:
                 shutil.rmtree(copy_path)
+
+    def test_loading_external_kinetic_library(self):
+        """This tests loading a kinetic library which is not in the RMG-database repo"""
+        kinetic_lib_in_db_path = os.path.join(settings['database.directory'], 'kinetics', 'libraries', 'NOx2018')
+        kinetic_lib_in_test_dir_path = os.path.join(os.path.dirname(molecule.__file__), 'test_data', 'copied_kinetic_lib')
+        os.makedirs(kinetic_lib_in_test_dir_path)
+        for file_name in ['reactions.py', 'dictionary.txt']:
+            shutil.copyfile(src=os.path.join(kinetic_lib_in_db_path, file_name),
+                            dst=os.path.join(kinetic_lib_in_test_dir_path, file_name))
+        self.database.load_libraries(path='', libraries=[kinetic_lib_in_test_dir_path])
+        self.assertIn('copied_kinetic_lib', list(self.database.libraries.keys()))
+        shutil.rmtree(kinetic_lib_in_test_dir_path, ignore_errors=True)
 
     def test_generate_high_p_limit_kinetics(self):
         """

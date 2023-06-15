@@ -109,7 +109,7 @@ class DepositoryReaction(Reaction):
 
 class KineticsDepository(Database):
     """
-    A class for working with an RMG kinetics depository. Each depository
+    A class for working with an RMG kinetics depository. Each depository 
     corresponds to a reaction family (a :class:`KineticsFamily` object). Each
     entry in a kinetics depository involves a reaction defined either by a
     real reactant and product species (as in a kinetics library).

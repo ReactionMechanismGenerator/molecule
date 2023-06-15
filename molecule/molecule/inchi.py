@@ -51,7 +51,7 @@ INCHI_PREFIX = 'InChI=1'
 """
 The prefix with the information on the distribution of unpaired electrons across the atoms.
 
-For example, a triplet biradical with unpaired electrons on atom 1 and atom 3
+For example, a triplet biradical with unpaired electrons on atom 1 and atom 3 
 will have the following unpaired electron layer in the augmented InChI:
 
 InChI=1/.../u1,3
@@ -66,7 +66,7 @@ U_LAYER_PREFIX = '/u'
 U_LAYER_SEPARATOR = ','
 
 """
-The prefix with the information on the distribution of the atoms
+The prefix with the information on the distribution of the atoms 
 with an unexpected number of lone pairs.
 
 For example, a singlet methylene with a lone pair on atom 1
@@ -89,13 +89,13 @@ player_pattern = re.compile(P_LAYER_PREFIX + r'(.*)')
 
 def decompose_aug_inchi(string):
     """
-    Converts an augmented inchi into
-    - an inchi,
+    Converts an augmented inchi into 
+    - an inchi, 
     - indices array for the atoms bearing unpaired electrons.
     - indices array for the atoms bearing (unexpected) lone pairs.
 
     Atoms that unexpectedly bear zero lone pairs will be mentioned as follows:
-    "x(0)", with x the index of the atom, and (0) denoting that the atom does not
+    "x(0)", with x the index of the atom, and (0) denoting that the atom does not 
     bear any lone pairs.
 
     The "x(0)" will be parsed into a tuple (x, 0).
@@ -187,11 +187,11 @@ def compose_aug_inchi_key(inchi_key, ulayer=None, player=None):
 
 def _parse_h_layer(inchi):
     """
-    Converts the Mobile H layer of an inchi string into a
+    Converts the Mobile H layer of an inchi string into a 
     list of atom indices couples that carry a mobile hydrogen.
 
     Example:
-    The hydrogen of the hydroxyl group can migrate to the carbonyl
+    The hydrogen of the hydroxyl group can migrate to the carbonyl 
     oxygen.
 
     O=C-O
@@ -232,17 +232,17 @@ def _parse_h_layer(inchi):
 
 def _parse_e_layer(auxinfo):
     """
-    Converts the layer with equivalence information (E-layer)
+    Converts the layer with equivalence information (E-layer) 
     on atoms into a list of lists of equivalent atom indices.
 
     Example:
     Auxiliary info of InChI=1S/C8H14/c1-5-7(3)8(4)6-2/h5-8H,1-2H2,3-4H3:
     AuxInfo=1/0/N:1,8,4,6,2,7,3,5/E:(1,2)(3,4)(5,6)(7,8)/rA:8C.2C.2CCCCCC/rB:s1;s2;s3;s3;s5;s5;d7;/rC:;;;;;;;;
-    E-layer:
+    E-layer: 
 
     /E:(1,2)(3,4)(5,6)(7,8)/
 
-    denotes that atoms (1,2), (3,4), (5,6), (7,8) are equivalent and cannot be distinguished based on the
+    denotes that atoms (1,2), (3,4), (5,6), (7,8) are equivalent and cannot be distinguished based on the 
     implemented canonicalization algorithm.
 
     Returned object:

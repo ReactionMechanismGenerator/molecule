@@ -42,7 +42,7 @@ from molecule.rmgobject import RMGObject
 class TransportData(RMGObject):
     """
     A set of transport properties.
-
+    
     The attributes are:
     =================  ============================================================
     Attribute          Description
@@ -54,7 +54,7 @@ class TransportData(RMGObject):
     `polarizability`    Polarizability Volume
     `rotrelaxcollnum`   Rotational relaxation number at 298 K, saved as a double.
     =================  ============================================================
-
+    
     """
 
     def __init__(self, shapeIndex=None, epsilon=None, sigma=None, dipoleMoment=None, polarizability=None,
@@ -107,7 +107,7 @@ class TransportData(RMGObject):
         Return the value of the Lennard-Jones collision frequency in Hz at the
         given temperature `T` in K for colliders with the given concentration
         `M` in mol/m^3 and reduced mass `mu` in amu.
-
+        
         This seems to also exist in molecule.pdep.configuration.calculate_collision_frequency
         Why the redundancy?
         """
@@ -122,11 +122,11 @@ class TransportData(RMGObject):
     def to_cantera(self):
         """
         Returns a Cantera GasTransportData object.
-
+    
         The Cantera usage is as follows:
-
+        
         GasTransportData().set_customary_units(self, geometry, diameter, well_depth, dipole=0.0, polarizability=0.0, rotational_relaxation=0.0, acentric_factor=0.0)
-        Set the parameters using customary units: diameter in Angstroms, well depth in Kelvin, dipole in Debye, rotational relaxiation at 298 K, and polarizability in Angstroms^3.
+        Set the parameters using customary units: diameter in Angstroms, well depth in Kelvin, dipole in Debye, rotational relaxiation at 298 K, and polarizability in Angstroms^3. 
         These are the units used in in CK-style input files.
         """
         import cantera as ct

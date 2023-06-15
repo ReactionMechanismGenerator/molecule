@@ -42,7 +42,7 @@ from molecule.molecule import Molecule
 def process_thermo_data(spc, thermo0, thermo_class=NASA, solvent_name=''):
     """
     Converts via Wilhoit into required `thermo_class` and sets `E0`.
-
+    
     Resulting thermo is returned.
     """
     thermo = None
@@ -106,13 +106,13 @@ def process_thermo_data(spc, thermo0, thermo_class=NASA, solvent_name=''):
 def generate_thermo_data(spc, thermo_class=NASA, solvent_name=''):
     """
     Generates thermo data, first checking Libraries, then using either QM or Database.
-
+    
     The database generates the thermo data for each structure (resonance isomer),
     picks that with lowest H298 value.
-
+    
     It then calls :meth:`process_thermo_data`, to convert (via Wilhoit) to NASA
     and set the E0.
-
+    
     Result stored in `spc.thermo` and returned.
     """
 
@@ -128,7 +128,7 @@ def generate_thermo_data(spc, thermo_class=NASA, solvent_name=''):
     # 1. maybe only submit cyclic core
     # 2. to help radical prediction, HBI should also
     #    look up centrailThermoDB for its saturated version
-    #    currently it only looks up libraries or estimates via GAV
+    #    currently it only looks up libraries or estimates via GAV 
     from molecule.rmg.input import get_input
 
     try:
@@ -148,8 +148,8 @@ def evaluator(spc, solvent_name=''):
     """
     Module-level function passed to workers.
 
-    generates a thermodata object for the
-    identifier and stores it in the
+    generates a thermodata object for the 
+    identifier and stores it in the 
     thermo database.
 
     Next, thermo is generated of this species.
@@ -176,7 +176,7 @@ def submit(spc, solvent_name=''):
 
     In a parallel run, the thermo attribute will
     store the future object, until the get method
-    is called, which replaces the future object with
+    is called, which replaces the future object with 
     the result.
 
     """

@@ -29,17 +29,20 @@ cimport numpy as np
 
 cimport molecule.constants as constants
 from molecule.quantity cimport ScalarQuantity, ArrayQuantity
+from molecule.thermo.model cimport HeatCapacityModel
+#from molecule.statmech.conformer cimport Conformer
+from molecule.kinetics.model cimport TunnelingModel
 from molecule.molecule.molecule cimport Atom, Bond, Molecule
 from molecule.molecule.graph cimport Graph
 
 ################################################################################
 
 cdef class Species:
-
+    
     cdef public int index
     cdef public str label
     cdef public object thermo
-    cdef public object conformer
+    #cdef public Conformer conformer
     cdef public object transport_data
     cdef public list molecule
     cdef public ScalarQuantity _molecular_weight
@@ -58,19 +61,19 @@ cdef class Species:
     cdef str _smiles
 
     cpdef generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?, bint save_order=?)
-
+    
     cpdef bint is_isomorphic(self, other, bint generate_initial_map=?, bint save_order=?, bint strict=?) except -2
 
     cpdef bint is_identical(self, other, bint strict=?) except -2
 
     cpdef bint is_structure_in_list(self, list species_list) except -2
-
+    
     cpdef from_adjacency_list(self, adjlist, bint raise_atomtype_exception=?, bint raise_charge_exception=?)
 
     cpdef from_smiles(self, smiles)
-
+    
     cpdef to_adjacency_list(self)
-
+    
     cpdef bint contains_surface_site(self) except -2
 
     cpdef bint is_surface_site(self) except -2
@@ -103,4 +106,34 @@ cdef class Species:
 
     cpdef set_structure(self, str structure)
 
+    #cpdef object get_henry_law_constant_data(self, list Ts=?)
+
+    #cpdef object get_liquid_volumetric_mass_transfer_coefficient_data(self, list Ts=?)
+    
 ################################################################################
+
+cdef class TransitionState:
+    
+    cdef public str label
+    #cdef public Conformer conformer
+    cdef public ScalarQuantity _frequency
+    cdef public int degeneracy
+    cdef public TunnelingModel tunneling
+
+    cpdef double get_partition_function(self, double T) except -1
+
+    cpdef double get_heat_capacity(self, double T) except -100000000
+
+    cpdef double get_enthalpy(self, double T) except 100000000
+
+    cpdef double get_entropy(self, double T) except -100000000
+
+    cpdef double get_free_energy(self, double T) except 100000000
+
+    cpdef np.ndarray get_sum_of_states(self, np.ndarray e_list)
+
+    cpdef np.ndarray get_density_of_states(self, np.ndarray e_list)
+    
+    cpdef double calculate_tunneling_factor(self, double T) except -1
+    
+    cpdef np.ndarray calculate_tunneling_function(self, np.ndarray e_list)

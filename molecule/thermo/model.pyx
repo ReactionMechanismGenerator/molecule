@@ -42,7 +42,7 @@ cdef class HeatCapacityModel(RMGObject):
     """
     A base class for heat capacity models, containing several attributes
     common to all models:
-
+    
     =============== ============================================================
     Attribute       Description
     =============== ============================================================
@@ -55,7 +55,7 @@ cdef class HeatCapacityModel(RMGObject):
     =============== ============================================================
 
     """
-
+    
     def __init__(self, Tmin=None, Tmax=None, E0=None, Cp0=None, CpInf=None, label='', comment=''):
         self.Tmin = Tmin
         self.Tmax = Tmax
@@ -64,7 +64,7 @@ cdef class HeatCapacityModel(RMGObject):
         self.CpInf = CpInf
         self.label = label
         self.comment = comment
-
+        
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
@@ -118,7 +118,7 @@ cdef class HeatCapacityModel(RMGObject):
         """
         Return ``True`` if the temperature `T` in K is within the valid
         temperature range of the thermodynamic data, or ``False`` if not. If
-        the minimum and maximum temperature are not defined, ``True`` is
+        the minimum and maximum temperature are not defined, ``True`` is 
         returned.
         """
         return (self._Tmin is None or self._Tmin.value_si <= T) and (self.Tmax is None or T <= self._Tmax.value_si)
@@ -160,7 +160,7 @@ cdef class HeatCapacityModel(RMGObject):
         """
         cdef double T
         cdef list Tdata
-
+        
         Tdata = [300,400,500,600,800,1000,1500,2000]
         for T in Tdata:
             if not (0.8 < self.get_heat_capacity(T) / other.get_heat_capacity(T) < 1.25):
@@ -182,7 +182,7 @@ cdef class HeatCapacityModel(RMGObject):
         """
         cdef double T
         cdef list Tdata
-
+        
         Tdata = [300,400,500,600,800,1000,1500,2000]
         for T in Tdata:
             if not (0.95 < self.get_heat_capacity(T) / other.get_heat_capacity(T) < 1.05):
@@ -195,18 +195,18 @@ cdef class HeatCapacityModel(RMGObject):
                 return False
 
         return True
-
+    
     cpdef double discrepancy(self, HeatCapacityModel other) except -2:
         """
         Return some measure of how dissimilar `self` is from `other`.
-
+        
         The measure is arbitrary, but hopefully useful for sorting purposes.
         Discrepancy of 0 means they are identical
         """
         cdef double T
         cdef double discrepancy
         cdef list Tdata
-
+        
         Tdata = [300,400,500,600,800,1000,1500,2000]
         discrepancy = 0.0
         for T in Tdata:

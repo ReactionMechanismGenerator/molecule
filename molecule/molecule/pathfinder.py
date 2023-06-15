@@ -41,7 +41,7 @@ from molecule.molecule.graph import Vertex, Edge
 
 def find_butadiene(start, end):
     """
-    Search for a path between start and end atom that consists of
+    Search for a path between start and end atom that consists of 
     alternating non-single and single bonds.
 
     Returns a list with atom and bond elements from start to end, or
@@ -73,7 +73,7 @@ def find_butadiene(start, end):
 
 def find_butadiene_end_with_charge(start):
     """
-    Search for a (4-atom, 3-bond) path between start and end atom that consists of
+    Search for a (4-atom, 3-bond) path between start and end atom that consists of 
     alternating non-single and single bonds and ends with a charged atom.
 
     Returns a list with atom and bond elements from start to end, or
@@ -106,7 +106,7 @@ def find_butadiene_end_with_charge(start):
 
 def find_allyl_end_with_charge(start):
     """
-    Search for a (3-atom, 2-bond) path between start and end atom that consists of
+    Search for a (3-atom, 2-bond) path between start and end atom that consists of 
     alternating non-single and single bonds and ends with a charged atom.
 
     Returns a list with atom and bond elements from start to end, or
@@ -162,7 +162,7 @@ def find_shortest_path(start, end, path=None):
 
 def add_unsaturated_bonds(path):
     """
-    Find all the (2-atom, 1-bond) patterns "X=X" starting from the
+    Find all the (2-atom, 1-bond) patterns "X=X" starting from the 
     last atom of the existing path.
 
     The bond attached to the starting atom should be non single.
@@ -181,7 +181,7 @@ def add_unsaturated_bonds(path):
 
 def add_allyls(path):
     """
-    Find all the (3-atom, 2-bond) patterns "X=X-X" starting from the
+    Find all the (3-atom, 2-bond) patterns "X=X-X" starting from the 
     last atom of the existing path.
 
     The bond attached to the starting atom should be non single.
@@ -203,7 +203,7 @@ def add_allyls(path):
 
 def add_inverse_allyls(path):
     """
-    Find all the (3-atom, 2-bond) patterns "start~atom2=atom3" starting from the
+    Find all the (3-atom, 2-bond) patterns "start~atom2=atom3" starting from the 
     last atom of the existing path.
 
     The second bond should be non-single.

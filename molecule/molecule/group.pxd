@@ -38,13 +38,16 @@ cdef class GroupAtom(Vertex):
     cdef public list charge
     cdef public str label
     cdef public list lone_pairs
-
+    cdef public list site 
+    cdef public list morphology
     cdef public dict props
 
     cdef public list reg_dim_atm
     cdef public list reg_dim_u
     cdef public list reg_dim_r
-
+    cdef public list reg_dim_site
+    cdef public list reg_dim_morphology
+    
     cpdef Vertex copy(self)
 
     cpdef _change_bond(self, short order)
@@ -56,7 +59,7 @@ cdef class GroupAtom(Vertex):
     cpdef _gain_radical(self, short radical)
 
     cpdef _lose_radical(self, short radical)
-
+    
     cpdef _gain_pair(self, short radical)
 
     cpdef _lose_pair(self, short radical)
@@ -95,11 +98,11 @@ cdef class GroupBond(Edge):
     cpdef Edge copy(self)
 
     cpdef list get_order_str(self)
-
+    
     cpdef set_order_str(self, list new_order)
-
+    
     cpdef list get_order_num(self)
-
+    
     cpdef set_order_num(self, list new_order)
 
     cpdef _change_bond(self, short order)
@@ -126,7 +129,8 @@ cdef class Group(Graph):
 
     cdef public dict props
     cdef public list multiplicity
-
+    cdef public list metal 
+    cdef public list facet
     # These read-only attribues act as a "fingerprint" for accelerating
     # subgraph isomorphism checks
     cdef public dict elementCount
@@ -166,10 +170,10 @@ cdef class Group(Graph):
 
     cpdef dict get_element_count(self)
 
-    cpdef from_adjacency_list(self, str adjlist)
+    cpdef from_adjacency_list(self, str adjlist, bint check_consistency=?)
 
     cpdef to_adjacency_list(self, str label=?)
-
+    
     cpdef update_fingerprint(self)
 
     cpdef update_charge(self)
@@ -181,7 +185,7 @@ cdef class Group(Graph):
     cpdef bint is_subgraph_isomorphic(self, Graph other, dict initial_map=?, bint generate_initial_map=?, bint save_order=?) except -2
 
     cpdef list find_subgraph_isomorphisms(self, Graph other, dict initial_map=?, bint save_order=?)
-
+    
     cpdef bint is_identical(self, Graph other, bint save_order=?)
 
     cpdef bint is_surface_site(self) except -2
@@ -191,6 +195,8 @@ cdef class Group(Graph):
     cpdef list get_surface_sites(self)
 
     cpdef bint is_aromatic_ring(self)
+
+    cpdef bint has_wildcards(self)
 
     cpdef bint standardize_atomtype(self)
 

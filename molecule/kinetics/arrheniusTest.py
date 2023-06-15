@@ -232,8 +232,8 @@ class TestArrhenius(unittest.TestCase):
 
     def test_to_cantera_kinetics(self):
         """
-        Test that the Arrhenius cantera object can be set properly within
-        a cantera ElementaryReaction object
+        Test that the Arrhenius cantera object can be set properly within 
+        a cantera Reaction object
         """
         ctArrhenius = self.arrhenius.to_cantera_kinetics()
         self.assertAlmostEqual(ctArrhenius.pre_exponential_factor, 1e9, 6)
@@ -438,7 +438,7 @@ class TestArrheniusBM(unittest.TestCase):
 
         self.rsmi = 'NC(=NC=O)O'
         self.psmi = 'O=CNC(=O)N'
-        self.arrhenius = Arrhenius(A=(8.00037e+12,'s^-1'),
+        self.arrhenius = Arrhenius(A=(8.00037e+12,'s^-1'), 
                                    n=0.391734,
                                    Ea=(94.5149,'kJ/mol'),
                                    T0=(1,'K'),
@@ -448,15 +448,15 @@ class TestArrheniusBM(unittest.TestCase):
                                    )
 
         self.r_thermo = NASA(polynomials=[
-            NASAPolynomial(coeffs=[3.90453,0.0068491,0.000125755,-2.92973e-07,2.12971e-10,-45444.2,10.0669], Tmin=(10,'K'), Tmax=(433.425,'K')),
-            NASAPolynomial(coeffs=[2.09778,0.0367646,-2.36023e-05,7.24527e-09,-8.51275e-13,-45412,15.8381], Tmin=(433.425,'K'), Tmax=(3000,'K'))],
-            Tmin=(10,'K'), Tmax=(3000,'K'), E0=(-377.851,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(232.805,'J/(mol*K)'),
+            NASAPolynomial(coeffs=[3.90453,0.0068491,0.000125755,-2.92973e-07,2.12971e-10,-45444.2,10.0669], Tmin=(10,'K'), Tmax=(433.425,'K')), 
+            NASAPolynomial(coeffs=[2.09778,0.0367646,-2.36023e-05,7.24527e-09,-8.51275e-13,-45412,15.8381], Tmin=(433.425,'K'), Tmax=(3000,'K'))], 
+            Tmin=(10,'K'), Tmax=(3000,'K'), E0=(-377.851,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(232.805,'J/(mol*K)'), 
             comment="""Thermo library: Spiekermann_refining_elementary_reactions"""
             )
         self.p_thermo = NASA(polynomials=[
-            NASAPolynomial(coeffs=[3.88423,0.00825528,0.000133399,-3.31802e-07,2.52823e-10,-51045.1,10.3937], Tmin=(10,'K'), Tmax=(428.701,'K')),
-            NASAPolynomial(coeffs=[2.89294,0.0351772,-2.26349e-05,7.00331e-09,-8.2982e-13,-51122.5,12.4424], Tmin=(428.701,'K'), Tmax=(3000,'K'))],
-            Tmin=(10,'K'), Tmax=(3000,'K'), E0=(-424.419,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(232.805,'J/(mol*K)'),
+            NASAPolynomial(coeffs=[3.88423,0.00825528,0.000133399,-3.31802e-07,2.52823e-10,-51045.1,10.3937], Tmin=(10,'K'), Tmax=(428.701,'K')), 
+            NASAPolynomial(coeffs=[2.89294,0.0351772,-2.26349e-05,7.00331e-09,-8.2982e-13,-51122.5,12.4424], Tmin=(428.701,'K'), Tmax=(3000,'K'))], 
+            Tmin=(10,'K'), Tmax=(3000,'K'), E0=(-424.419,'kJ/mol'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(232.805,'J/(mol*K)'), 
             comment="""Thermo library: Spiekermann_refining_elementary_reactions"""
             )
 
@@ -516,7 +516,7 @@ class TestArrheniusBM(unittest.TestCase):
                             products=[Species(molecule=[product], thermo=self.p_thermo)],
                             kinetics=self.arrhenius,
                             )
-
+        
         arrhenius_bm = ArrheniusBM().fit_to_reactions([reaction], w0=self.w0)
         self.assertAlmostEqual(arrhenius_bm.A.value_si, self.arrhenius_bm.A.value_si, delta=1.5e1)
         self.assertAlmostEqual(arrhenius_bm.n.value_si, self.arrhenius_bm.n.value_si, 1, 4)
@@ -1173,25 +1173,25 @@ class TestMultiPDepArrhenius(unittest.TestCase):
         from molecule.molecule import Molecule
         from molecule.data.kinetics import LibraryReaction
         from molecule.thermo import NASA, NASAPolynomial
-        test_reaction = LibraryReaction(reactants=[Species(label="C2H3", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.12502,0.00235137,2.36803e-05,-3.35092e-08,1.39444e-11,34524.3,8.81538], Tmin=(200,"K"), Tmax=(1000,"K")), NASAPolynomial(coeffs=[4.37211,0.00746869,-2.64716e-06,4.22753e-10,-2.44958e-14,33805.2,0.428772], Tmin=(1000,"K"), Tmax=(6000,"K"))], Tmin=(200,"K"), Tmax=(6000,"K"), E0=(285.696,"kJ/mol"), Cp0=(33.2579,"J/mol/K"), CpInf=(108.088,"J/mol/K"), comment="""ATcT3E\nC2H3 <g> ATcT ver. 1.122, DHf298 = 296.91 ± 0.33 kJ/mol - fit JAN17"""), molecule=[Molecule(smiles="[CH]=C")], molecular_weight=(27.0452,"amu")),
-                                                  Species(label="CH2O", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[4.77187,-0.00976266,3.70122e-05,-3.76922e-08,1.31327e-11,-14379.8,0.696586], Tmin=(200,"K"), Tmax=(1000,"K")), NASAPolynomial(coeffs=[2.91333,0.0067004,-2.55521e-06,4.27795e-10,-2.44073e-14,-14462.2,7.43823], Tmin=(1000,"K"), Tmax=(6000,"K"))], Tmin=(200,"K"), Tmax=(6000,"K"), E0=(-119.527,"kJ/mol"), Cp0=(33.2579,"J/mol/K"), CpInf=(83.1447,"J/mol/K"), comment="""ATcT3E\nH2CO <g> ATcT ver. 1.122, DHf298 = -109.188 ± 0.099 kJ/mol - fit JAN17"""), molecule=[Molecule(smiles="C=O")], molecular_weight=(30.026,"amu"))],
-                                        products=[Species(label="C2H4", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.65151,-0.00535067,5.16486e-05,-6.36869e-08,2.50743e-11,5114.51,5.38561], Tmin=(200,"K"), Tmax=(1000,"K")), NASAPolynomial(coeffs=[4.14446,0.0102648,-3.61247e-06,5.74009e-10,-3.39296e-14,4190.59,-1.14778], Tmin=(1000,"K"), Tmax=(6000,"K"))], Tmin=(200,"K"), Tmax=(6000,"K"), E0=(42.06,"kJ/mol"), Cp0=(33.2579,"J/mol/K"), CpInf=(133.032,"J/mol/K"), comment="""ATcT3E\nC2H4 <g> ATcT ver. 1.122, DHf298 = 52.45 ± 0.13 kJ/mol - fit JAN17"""), molecule=[Molecule(smiles="C=C")], molecular_weight=(28.0532,"amu")),
-                                                  Species(label="HCO", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.97075,-0.00149122,9.54042e-06,-8.8272e-09,2.67645e-12,3842.03,4.4466], Tmin=(200,"K"), Tmax=(1000,"K")), NASAPolynomial(coeffs=[3.85781,0.00264114,-7.44177e-07,1.23313e-10,-8.88959e-15,3616.43,3.92451], Tmin=(1000,"K"), Tmax=(6000,"K"))], Tmin=(200,"K"), Tmax=(6000,"K"), E0=(32.0237,"kJ/mol"), Cp0=(33.2579,"J/mol/K"), CpInf=(58.2013,"J/mol/K"), comment="""HCO <g> ATcT ver. 1.122, DHf298 = 41.803 ± 0.099 kJ/mol - fit JAN17"""), molecule=[Molecule(smiles="[CH]=O")], molecular_weight=(29.018,"amu"))],
-                                        kinetics=MultiPDepArrhenius(arrhenius=[PDepArrhenius(pressures=([0.001,0.01,0.1,1,10,100,1000],"atm"),
-                                                                                             arrhenius=[Arrhenius(A=(1.1e+07,"cm^3/(mol*s)"), n=1.09, Ea=(1807,"cal/mol"), T0=(1,"K")),
-                                                                                                        Arrhenius(A=(2.5e+07,"cm^3/(mol*s)"), n=0.993, Ea=(1995,"cal/mol"), T0=(1,"K")),
-                                                                                                        Arrhenius(A=(2.5e+08,"cm^3/(mol*s)"), n=0.704, Ea=(2596,"cal/mol"), T0=(1,"K")),
-                                                                                                        Arrhenius(A=(1.4e+10,"cm^3/(mol*s)"), n=0.209, Ea=(3934,"cal/mol"), T0=(1,"K")),
-                                                                                                        Arrhenius(A=(3.5e+13,"cm^3/(mol*s)"), n=-0.726, Ea=(6944,"cal/mol"), T0=(1,"K")),
-                                                                                                        Arrhenius(A=(3.3e+14,"cm^3/(mol*s)"), n=-0.866, Ea=(10966,"cal/mol"), T0=(1,"K")),
-                                                                                                        Arrhenius(A=(17,"cm^3/(mol*s)"), n=3.17, Ea=(9400,"cal/mol"), T0=(1,"K"))]),
-                                                                               PDepArrhenius(pressures=([0.001,0.01,0.1,1,10,100,1000],"atm"),
-                                                                                             arrhenius=[Arrhenius(A=(-2.3e+16,"cm^3/(mol*s)"), n=-1.269, Ea=(20617,"cal/mol"), T0=(1,"K")),
-                                                                                                        Arrhenius(A=(-5.2e+16,"cm^3/(mol*s)"), n=-1.366, Ea=(20805,"cal/mol"), T0=(1,"K")),
-                                                                                                        Arrhenius(A=(-1.5e+18,"cm^3/(mol*s)"), n=-1.769, Ea=(22524,"cal/mol"), T0=(1,"K")),
-                                                                                                        Arrhenius(A=(-8.5e+19,"cm^3/(mol*s)"), n=-2.264, Ea=(23862,"cal/mol"), T0=(1,"K")),
-                                                                                                        Arrhenius(A=(-4.4e+23,"cm^3/(mol*s)"), n=-3.278, Ea=(27795,"cal/mol"), T0=(1,"K")),
-                                                                                                        Arrhenius(A=(-4.2e+24,"cm^3/(mol*s)"), n=-3.418, Ea=(31817,"cal/mol"), T0=(1,"K")),
+        test_reaction = LibraryReaction(reactants=[Species(label="C2H3", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.12502,0.00235137,2.36803e-05,-3.35092e-08,1.39444e-11,34524.3,8.81538], Tmin=(200,"K"), Tmax=(1000,"K")), NASAPolynomial(coeffs=[4.37211,0.00746869,-2.64716e-06,4.22753e-10,-2.44958e-14,33805.2,0.428772], Tmin=(1000,"K"), Tmax=(6000,"K"))], Tmin=(200,"K"), Tmax=(6000,"K"), E0=(285.696,"kJ/mol"), Cp0=(33.2579,"J/mol/K"), CpInf=(108.088,"J/mol/K"), comment="""ATcT3E\nC2H3 <g> ATcT ver. 1.122, DHf298 = 296.91 ± 0.33 kJ/mol - fit JAN17"""), molecule=[Molecule(smiles="[CH]=C")], molecular_weight=(27.0452,"amu")), 
+                                                  Species(label="CH2O", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[4.77187,-0.00976266,3.70122e-05,-3.76922e-08,1.31327e-11,-14379.8,0.696586], Tmin=(200,"K"), Tmax=(1000,"K")), NASAPolynomial(coeffs=[2.91333,0.0067004,-2.55521e-06,4.27795e-10,-2.44073e-14,-14462.2,7.43823], Tmin=(1000,"K"), Tmax=(6000,"K"))], Tmin=(200,"K"), Tmax=(6000,"K"), E0=(-119.527,"kJ/mol"), Cp0=(33.2579,"J/mol/K"), CpInf=(83.1447,"J/mol/K"), comment="""ATcT3E\nH2CO <g> ATcT ver. 1.122, DHf298 = -109.188 ± 0.099 kJ/mol - fit JAN17"""), molecule=[Molecule(smiles="C=O")], molecular_weight=(30.026,"amu"))], 
+                                        products=[Species(label="C2H4", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.65151,-0.00535067,5.16486e-05,-6.36869e-08,2.50743e-11,5114.51,5.38561], Tmin=(200,"K"), Tmax=(1000,"K")), NASAPolynomial(coeffs=[4.14446,0.0102648,-3.61247e-06,5.74009e-10,-3.39296e-14,4190.59,-1.14778], Tmin=(1000,"K"), Tmax=(6000,"K"))], Tmin=(200,"K"), Tmax=(6000,"K"), E0=(42.06,"kJ/mol"), Cp0=(33.2579,"J/mol/K"), CpInf=(133.032,"J/mol/K"), comment="""ATcT3E\nC2H4 <g> ATcT ver. 1.122, DHf298 = 52.45 ± 0.13 kJ/mol - fit JAN17"""), molecule=[Molecule(smiles="C=C")], molecular_weight=(28.0532,"amu")), 
+                                                  Species(label="HCO", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.97075,-0.00149122,9.54042e-06,-8.8272e-09,2.67645e-12,3842.03,4.4466], Tmin=(200,"K"), Tmax=(1000,"K")), NASAPolynomial(coeffs=[3.85781,0.00264114,-7.44177e-07,1.23313e-10,-8.88959e-15,3616.43,3.92451], Tmin=(1000,"K"), Tmax=(6000,"K"))], Tmin=(200,"K"), Tmax=(6000,"K"), E0=(32.0237,"kJ/mol"), Cp0=(33.2579,"J/mol/K"), CpInf=(58.2013,"J/mol/K"), comment="""HCO <g> ATcT ver. 1.122, DHf298 = 41.803 ± 0.099 kJ/mol - fit JAN17"""), molecule=[Molecule(smiles="[CH]=O")], molecular_weight=(29.018,"amu"))], 
+                                        kinetics=MultiPDepArrhenius(arrhenius=[PDepArrhenius(pressures=([0.001,0.01,0.1,1,10,100,1000],"atm"), 
+                                                                                             arrhenius=[Arrhenius(A=(1.1e+07,"cm^3/(mol*s)"), n=1.09, Ea=(1807,"cal/mol"), T0=(1,"K")), 
+                                                                                                        Arrhenius(A=(2.5e+07,"cm^3/(mol*s)"), n=0.993, Ea=(1995,"cal/mol"), T0=(1,"K")), 
+                                                                                                        Arrhenius(A=(2.5e+08,"cm^3/(mol*s)"), n=0.704, Ea=(2596,"cal/mol"), T0=(1,"K")), 
+                                                                                                        Arrhenius(A=(1.4e+10,"cm^3/(mol*s)"), n=0.209, Ea=(3934,"cal/mol"), T0=(1,"K")), 
+                                                                                                        Arrhenius(A=(3.5e+13,"cm^3/(mol*s)"), n=-0.726, Ea=(6944,"cal/mol"), T0=(1,"K")), 
+                                                                                                        Arrhenius(A=(3.3e+14,"cm^3/(mol*s)"), n=-0.866, Ea=(10966,"cal/mol"), T0=(1,"K")), 
+                                                                                                        Arrhenius(A=(17,"cm^3/(mol*s)"), n=3.17, Ea=(9400,"cal/mol"), T0=(1,"K"))]), 
+                                                                               PDepArrhenius(pressures=([0.001,0.01,0.1,1,10,100,1000],"atm"), 
+                                                                                             arrhenius=[Arrhenius(A=(-2.3e+16,"cm^3/(mol*s)"), n=-1.269, Ea=(20617,"cal/mol"), T0=(1,"K")), 
+                                                                                                        Arrhenius(A=(-5.2e+16,"cm^3/(mol*s)"), n=-1.366, Ea=(20805,"cal/mol"), T0=(1,"K")), 
+                                                                                                        Arrhenius(A=(-1.5e+18,"cm^3/(mol*s)"), n=-1.769, Ea=(22524,"cal/mol"), T0=(1,"K")), 
+                                                                                                        Arrhenius(A=(-8.5e+19,"cm^3/(mol*s)"), n=-2.264, Ea=(23862,"cal/mol"), T0=(1,"K")), 
+                                                                                                        Arrhenius(A=(-4.4e+23,"cm^3/(mol*s)"), n=-3.278, Ea=(27795,"cal/mol"), T0=(1,"K")), 
+                                                                                                        Arrhenius(A=(-4.2e+24,"cm^3/(mol*s)"), n=-3.418, Ea=(31817,"cal/mol"), T0=(1,"K")), 
                                                                                                         Arrhenius(A=(-2.1e+11,"cm^3/(mol*s)"), n=0.618, Ea=(30251,"cal/mol"), T0=(1,"K"))])
                                                                                                     ]), duplicate=True)
         test_reaction.generate_reverse_rate_coefficient()

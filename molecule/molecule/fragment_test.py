@@ -5,6 +5,7 @@ from molecule.molecule import resonance
 from molecule.molecule.atomtype import ATOMTYPES
 from molecule.molecule.element import get_element
 from molecule.molecule.molecule import Atom, Bond, Molecule
+from molecule.species import Species
 
 import molecule.molecule.fragment
 
@@ -25,15 +26,15 @@ class TestCuttingLabel(unittest.TestCase):
         cutting_label_R_copy = self.cutting_label_R.copy()
 
         self.assertEqual('R', cutting_label_R_copy.name)
-        self.assertEqual(self.cutting_label_R.label,
+        self.assertEqual(self.cutting_label_R.label, 
                          cutting_label_R_copy.label)
-        self.assertEqual(self.cutting_label_R.charge,
+        self.assertEqual(self.cutting_label_R.charge, 
                          cutting_label_R_copy.charge)
-        self.assertEqual(self.cutting_label_R.radical_electrons,
+        self.assertEqual(self.cutting_label_R.radical_electrons, 
                          cutting_label_R_copy.radical_electrons)
-        self.assertEqual(self.cutting_label_R.lone_pairs,
+        self.assertEqual(self.cutting_label_R.lone_pairs, 
                          cutting_label_R_copy.lone_pairs)
-        self.assertEqual(self.cutting_label_R.isotope,
+        self.assertEqual(self.cutting_label_R.isotope, 
                          cutting_label_R_copy.isotope)
 
 class TestFragment(unittest.TestCase):
@@ -43,9 +44,9 @@ class TestFragment(unittest.TestCase):
         """
 
         # construct the first fragment
-        atom_C1 = Atom(element=get_element('C'),
-                    radical_electrons=0,
-                    charge=0,
+        atom_C1 = Atom(element=get_element('C'), 
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
         cutting_label_R1 = molecule.molecule.fragment.CuttingLabel('R')
@@ -67,9 +68,9 @@ class TestFragment(unittest.TestCase):
         for bond in bonds: self.fragment1.add_edge(bond)
 
         # construct the second fragment
-        atom_C2 = Atom(element=get_element('C'),
-                    radical_electrons=0,
-                    charge=0,
+        atom_C2 = Atom(element=get_element('C'), 
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
         cutting_label_R2 = molecule.molecule.fragment.CuttingLabel('R')
@@ -100,31 +101,31 @@ class TestFragment(unittest.TestCase):
         # the atom type is also calculated
         smiles_like = 'C'
         fragment = molecule.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
-
+        
         # construct fragment manually
         atom_C = Atom(element=get_element('C'),
-                    radical_electrons=0,
-                    charge=0,
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
-        atom_H1 = Atom(element=get_element('H'),
-                    radical_electrons=0,
-                    charge=0,
+        atom_H1 = Atom(element=get_element('H'), 
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
-        atom_H2 = Atom(element=get_element('H'),
-                    radical_electrons=0,
-                    charge=0,
+        atom_H2 = Atom(element=get_element('H'), 
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
-        atom_H3 = Atom(element=get_element('H'),
-                    radical_electrons=0,
-                    charge=0,
+        atom_H3 = Atom(element=get_element('H'), 
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
-        atom_H4 = Atom(element=get_element('H'),
-                    radical_electrons=0,
-                    charge=0,
+        atom_H4 = Atom(element=get_element('H'), 
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
         atom_C.atomtype=ATOMTYPES['Cs']
@@ -147,7 +148,7 @@ class TestFragment(unittest.TestCase):
             Bond(atom_C, atom_H3, 1),
             Bond(atom_C, atom_H4, 1)
         ]
-
+        
         expected_fragment = molecule.molecule.fragment.Fragment()
         for vertex in vertices: expected_fragment.add_vertex(vertex)
         for bond in bonds: expected_fragment.add_edge(bond)
@@ -163,18 +164,18 @@ class TestFragment(unittest.TestCase):
         fragment = molecule.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         atom_C = Atom(element=get_element('C'),
-                    radical_electrons=0,
-                    charge=0,
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
-        atom_H1 = Atom(element=get_element('H'),
-                    radical_electrons=0,
-                    charge=0,
+        atom_H1 = Atom(element=get_element('H'), 
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
-        atom_H2 = Atom(element=get_element('H'),
-                    radical_electrons=0,
-                    charge=0,
+        atom_H2 = Atom(element=get_element('H'), 
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
         # construct fragment manually
@@ -184,7 +185,7 @@ class TestFragment(unittest.TestCase):
 
         cutting_label_R1 = molecule.molecule.fragment.CuttingLabel('R')
         cutting_label_R2 = molecule.molecule.fragment.CuttingLabel('R')
-
+        
         vertices = [
             atom_C,
             cutting_label_R1,
@@ -199,7 +200,7 @@ class TestFragment(unittest.TestCase):
             Bond(atom_C, atom_H1, 1),
             Bond(atom_C, atom_H2, 1)
         ]
-
+        
         expected_fragment = molecule.molecule.fragment.Fragment()
         for vertex in vertices: expected_fragment.add_vertex(vertex)
         for bond in bonds: expected_fragment.add_edge(bond)
@@ -215,18 +216,18 @@ class TestFragment(unittest.TestCase):
         fragment = molecule.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         atom_C = Atom(element=get_element('C'),
-                    radical_electrons=0,
-                    charge=0,
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
-        atom_H1 = Atom(element=get_element('H'),
-                    radical_electrons=0,
-                    charge=0,
+        atom_H1 = Atom(element=get_element('H'), 
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
-        atom_H2 = Atom(element=get_element('H'),
-                    radical_electrons=0,
-                    charge=0,
+        atom_H2 = Atom(element=get_element('H'), 
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
         # construct fragment manually
@@ -236,7 +237,7 @@ class TestFragment(unittest.TestCase):
 
         cutting_label_R = molecule.molecule.fragment.CuttingLabel('R')
         cutting_label_L = molecule.molecule.fragment.CuttingLabel('L')
-
+        
         vertices = [
             atom_C,
             cutting_label_R,
@@ -251,7 +252,7 @@ class TestFragment(unittest.TestCase):
             Bond(atom_C, atom_H1, 1),
             Bond(atom_C, atom_H2, 1)
         ]
-
+        
         expected_fragment = molecule.molecule.fragment.Fragment()
         for vertex in vertices: expected_fragment.add_vertex(vertex)
         for bond in bonds: expected_fragment.add_edge(bond)
@@ -339,16 +340,24 @@ class TestFragment(unittest.TestCase):
 
         self.assertFalse(fragment.is_subgraph_isomorphic(other, initial_map=initial_map))
 
-    def test_assign_representative_species(self):
+    def test_assign_representative_species_1(self):
 
         smiles_like = 'RCR'
         fragment = molecule.molecule.fragment.Fragment().from_smiles_like_string(smiles_like)
 
         fragment.assign_representative_species()
 
-        expected_repr_spec = Molecule().from_smiles('C=CC(C)(CCCCCCCC(C)(C=C)C(C)C(C)C=CC)C(C)C(C)C=CC')
+        expected_repr_spec = Species().from_smiles('C=CC(C)(CCCCCCCC(C)(C=C)C(C)C(C)C=CC)C(C)C(C)C=CC')
 
         self.assertTrue(expected_repr_spec.is_isomorphic(fragment.species_repr))
+
+    def test_assign_representative_species_2(self):
+
+        fragment = molecule.molecule.fragment.Fragment().from_smiles_like_string('CCR')
+        fragment.assign_representative_species()
+
+        self.assertEqual(fragment.species_repr.symmetry_number, 3.0)
+        self.assertEqual(fragment.species_repr.smiles.count('C'), 14+2)
 
     def test_assign_representative_molecule(self):
 
@@ -376,23 +385,23 @@ class TestFragment(unittest.TestCase):
     def test_update_atomtypes(self):
 
         atom_C = Atom(element=get_element('C'),
-                    radical_electrons=0,
-                    charge=0,
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
-        atom_H1 = Atom(element=get_element('H'),
-                    radical_electrons=0,
-                    charge=0,
+        atom_H1 = Atom(element=get_element('H'), 
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
-        atom_H2 = Atom(element=get_element('H'),
-                    radical_electrons=0,
-                    charge=0,
+        atom_H2 = Atom(element=get_element('H'), 
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
         cutting_label_R1 = molecule.molecule.fragment.CuttingLabel('R')
         cutting_label_R2 = molecule.molecule.fragment.CuttingLabel('R')
-
+        
         vertices = [
             atom_C,
             cutting_label_R1,
@@ -407,7 +416,7 @@ class TestFragment(unittest.TestCase):
             Bond(atom_C, atom_H1, 1),
             Bond(atom_C, atom_H2, 1)
         ]
-
+        
         fragment = molecule.molecule.fragment.Fragment()
         for vertex in vertices: fragment.add_vertex(vertex)
         for bond in bonds: fragment.add_edge(bond)
@@ -423,23 +432,23 @@ class TestFragment(unittest.TestCase):
     def test_update(self):
 
         atom_C = Atom(element=get_element('C'),
-                    radical_electrons=0,
-                    charge=0,
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
-        atom_H1 = Atom(element=get_element('H'),
-                    radical_electrons=0,
-                    charge=0,
+        atom_H1 = Atom(element=get_element('H'), 
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
-        atom_H2 = Atom(element=get_element('H'),
-                    radical_electrons=0,
-                    charge=0,
+        atom_H2 = Atom(element=get_element('H'), 
+                    radical_electrons=0, 
+                    charge=0, 
                     lone_pairs=0)
 
         cutting_label_R1 = molecule.molecule.fragment.CuttingLabel('R')
         cutting_label_R2 = molecule.molecule.fragment.CuttingLabel('R')
-
+        
         vertices = [
             atom_C,
             cutting_label_R1,
@@ -454,7 +463,7 @@ class TestFragment(unittest.TestCase):
             Bond(atom_C, atom_H1, 1),
             Bond(atom_C, atom_H2, 1)
         ]
-
+        
         fragment = molecule.molecule.fragment.Fragment()
         for vertex in vertices: fragment.add_vertex(vertex)
         for bond in bonds: fragment.add_edge(bond)
@@ -652,7 +661,7 @@ class TestFragment(unittest.TestCase):
 """
         fragment = molecule.molecule.fragment.Fragment().from_adjacency_list(adj)
 
-        frag_res = resonance.generate_resonance_structures(fragment,
+        frag_res = resonance.generate_resonance_structures(fragment, 
                                                            clar_structures=False)
 
         self.assertEqual(len(frag_res), 2)
@@ -663,10 +672,10 @@ class TestFragment(unittest.TestCase):
 
         fragment = molecule.molecule.fragment.Fragment().from_smiles_like_string('c1ccccc1[CH]CR')
 
-        frag_res = resonance.generate_resonance_structures(fragment,
+        frag_res = resonance.generate_resonance_structures(fragment, 
                                                            clar_structures=True)
 
-        self.assertTrue(frag_res[0].is_aromatic())
+        self.assertTrue(frag_res[0].is_aromatic())    
         self.assertEqual(len(frag_res), 4)
 
     def test_fragment_is_identical(self):
@@ -852,17 +861,37 @@ class TestFragment(unittest.TestCase):
 
         self.assertTrue(mol_repr.is_isomorphic(ethane))
 
-    def test_assign_representative_species(self):
-
-        fragment = molecule.molecule.fragment.Fragment().from_smiles_like_string('CCR')
-        fragment.assign_representative_species()
-
-        self.assertEqual(fragment.species_repr.symmetry_number, 3.0)
-        self.assertEqual(fragment.species_repr.smiles.count('C'), 14+2)
-
     def test_to_rdkit_mol(self):
 
         fragment = molecule.molecule.fragment.Fragment().from_smiles_like_string('CCR')
         rdmol,_ = fragment.to_rdkit_mol()
 
         self.assertEqual(rdmol.GetNumAtoms(), 8)
+
+    def test_is_in_cycle_ethane(self):
+        """
+        Test the Fragment is_atom_in_cycle() and is_bond_in_cycle() methods with ethane.
+        """
+        frag = molecule.molecule.fragment.Fragment(smiles='CC')
+        for atom in frag.atoms:
+            self.assertFalse(frag.is_atom_in_cycle(atom))
+        for atom1 in frag.atoms:
+            for atom2, bond in atom1.bonds.items():
+                self.assertFalse(frag.is_bond_in_cycle(bond))
+
+    def test_is_in_cycle_cyclohexane(self):
+        """
+        Test the Fragment is_atom_in_cycle() and is_bond_in_cycle() methods with ethane.
+        """
+        frag = molecule.molecule.fragment.Fragment(smiles='C1CCCCC1')
+        for atom in frag.atoms:
+            if atom.is_hydrogen():
+                self.assertFalse(frag.is_atom_in_cycle(atom))
+            elif atom.is_carbon():
+                self.assertTrue(frag.is_atom_in_cycle(atom))
+        for atom1 in frag.atoms:
+            for atom2, bond in atom1.bonds.items():
+                if atom1.is_carbon() and atom2.is_carbon():
+                    self.assertTrue(frag.is_bond_in_cycle(bond))
+                else:
+                    self.assertFalse(frag.is_bond_in_cycle(bond))

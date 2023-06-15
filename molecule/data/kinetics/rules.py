@@ -29,7 +29,7 @@
 
 """
 This module contains functionality for working with kinetics "rate rules",
-which provide rate coefficient parameters for various combinations of
+which provide rate coefficient parameters for various combinations of 
 functional groups.
 """
 import codecs
@@ -53,13 +53,13 @@ from molecule.reaction import Reaction
 
 class KineticsRules(Database):
     """
-    A class for working with a set of "rate rules" for a RMG kinetics family.
+    A class for working with a set of "rate rules" for a RMG kinetics family. 
     """
 
     def __init__(self, label='', name='', short_desc='', long_desc='',auto_generated=False):
         Database.__init__(self, label=label, name=name, short_desc=short_desc, long_desc=long_desc)
         self.auto_generated = auto_generated
-
+        
     def __repr__(self):
         return '<KineticsRules "{0}">'.format(self.label)
 
@@ -265,7 +265,7 @@ class KineticsRules(Database):
                       " removed in version 2.3.", DeprecationWarning)
         index = 'General'  # mops up comments before the first rate ID
 
-        re_underline = re.compile('^\-+')
+        re_underline = re.compile(r'^\-+')
 
         comments = {}
         comments[index] = ''
@@ -352,7 +352,7 @@ class KineticsRules(Database):
             if len(line) > 48:  # make long lines line up in 10-space columns
                 flib.write(' ' * (10 - len(line) % 10))
             if entry.data.Tmax is None:
-                if re.match('\d+\-\d+', str(entry.data.Tmin).strip()):
+                if re.match(r'\d+\-\d+', str(entry.data.Tmin).strip()):
                     # Tmin contains string of Trange
                     Trange = '{0} '.format(entry.data.Tmin)
                 elif isinstance(entry.data.Tmin, ScalarQuantity):
@@ -415,7 +415,7 @@ class KineticsRules(Database):
 
     def has_rule(self, template):
         """
-        Return ``True`` if a rate rule with the given `template` currently
+        Return ``True`` if a rate rule with the given `template` currently 
         exists, or ``False`` otherwise.
         """
         return self.get_rule(template) is not None
@@ -439,7 +439,7 @@ class KineticsRules(Database):
 
     def get_all_rules(self, template):
         """
-        Return all of the exact rate rules with the given `template`. Raises a
+        Return all of the exact rate rules with the given `template`. Raises a 
         :class:`ValueError` if no corresponding entry exists.
         """
         entries = []
@@ -464,10 +464,10 @@ class KineticsRules(Database):
 
         # Generate the distance 1 pairings which must be averaged for this root template.
         # The distance 1 template is created by taking the parent node from one or more trees
-        # and creating the combinations with children from a single remaining tree.
+        # and creating the combinations with children from a single remaining tree.  
         # i.e. for some node (A,B), we want to fetch all combinations for the pairing of (A,B's children) and
-        # (A's children, B).  For node (A,B,C), we would retrieve all combinations of (A,B,C's children)
-        # (A,B's children,C) etc...
+        # (A's children, B).  For node (A,B,C), we would retrieve all combinations of (A,B,C's children) 
+        # (A,B's children,C) etc...  
         # If a particular node has no children, it is skipped from the children expansion altogether.
 
         children_list = []
@@ -557,9 +557,9 @@ class KineticsRules(Database):
         Based on averaging log k. For most complex case:
         k = AT^n * exp(-Ea+alpha*H)
         log k = log(A) * nlog(T) * (-Ea + alpha*H)
-
+        
         Hence we average n, Ea, and alpha arithmetically, but we
-        average log A (geometric average)
+        average log A (geometric average) 
         """
         logA = 0.0
         n = 0.0
@@ -610,7 +610,7 @@ class KineticsRules(Database):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
-
+        
         Returns a tuple (kinetics, entry) where `entry` is the database
         entry used to determine the kinetics only if it is an exact match,
         and is None if some averaging or use of a parent node took place.
@@ -625,7 +625,7 @@ class KineticsRules(Database):
                 err_entry = abs(entry.data.uncertainty.mu) + sqrt(2.0*entry.data.uncertainty.var/pi)
                 if err_entry > err_parent:
                     entry = entry.parent
-
+            
             kinetics = deepcopy(entry.data)
             if entry0 == entry:
                 kinetics.comment = "Estimated from node {}".format(entry.label)
@@ -642,7 +642,7 @@ class KineticsRules(Database):
                     kinetics.comment += "\n"
                     kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
                 return kinetics,None
-
+                     
         original_leaves = get_template_label(template)
         template_list = [template]
         distance_list = [np.zeros(len(template))]
@@ -667,7 +667,7 @@ class KineticsRules(Database):
                 distances.append(distance_list[i])
 
             if len(kinetics_list) > 0:
-                # Filter the kinetics to use templates with the lowest minimum euclidean distance
+                # Filter the kinetics to use templates with the lowest minimum euclidean distance 
                 # from the specified template
                 norms = [np.linalg.norm(d) for d in distances]
                 new_min_norm = min(norms)
@@ -734,8 +734,8 @@ class KineticsRules(Database):
         else:
             # We found one or more results! Let's average them together
             kinetics = self._get_average_kinetics([k for k, t in kinetics_list])
-            # Unlike in the case of a single rule, the verbose comments for averaging are lost unless they are
-            # appended in the following lines.  Verbose comments are filtered out in
+            # Unlike in the case of a single rule, the verbose comments for averaging are lost unless they are 
+            # appended in the following lines.  Verbose comments are filtered out in 
             # molecule.rmg.model.CoreEdgeReactionModel.generate_kinetics
             kinetics.comment = 'Average of [{0}]'.format(
                 ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kinetics_list))
@@ -763,7 +763,7 @@ def remove_identical_kinetics(k_list):
     removes all identical kinetics entries in k_list
     takes in a list of kinetics entries
     returns the list with the identical kinetics entries removed
-
+    
     does this based on strings, which should be fine for this specifically, since we shouldn't have any
     identical kinetics entries in the families and all of the identical kinetics should look exactly the same
     """

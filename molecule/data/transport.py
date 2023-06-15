@@ -442,12 +442,12 @@ class TransportDatabase(object):
         :class:`Molecule` object `molecule` by estimation using Joback's group
         additivity values. If no group additivity values are loaded, a
         :class:`DatabaseError` is raised.
-
+        
         Radicals are saturated with H atoms and the parent molecule properties
         are returned.
 
         For halogenated hydrocarbons, a boiling point `Tb` correction is applied from the following source:
-        Sukumar Devotta and V. Rao Pendyala,
+        Sukumar Devotta and V. Rao Pendyala, 
         "Modified Joback group contribution method for normal boiling point of aliphatic halogenated compounds"
         Industrial & Engineering Chemistry Research 1992 31 (8), 2042-2046
         DOI: 10.1021/ie00008a029
@@ -584,7 +584,7 @@ class TransportDatabase(object):
     def get_transport_properties_via_lennard_jones_parameters(self, species):
         """
         Serves as last resort if every other method to estimate Transport Properties fails.
-
+        
         Generate the Lennard-Jones parameters for the species.
         """
         count = sum([1 for atom in species.molecule[0].vertices if atom.is_non_hydrogen()])

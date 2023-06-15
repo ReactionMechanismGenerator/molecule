@@ -397,6 +397,7 @@ class TestGroupAtom(unittest.TestCase):
         for index, atom in enumerate(group.atoms):
             self.assertTrue(atom.has_wildcards(),
                             'GroupAtom with index {0} should have wildcards, but does not'.format(index))
+        self.assertTrue(group.has_wildcards(), 'Group should have wildcards, but does not')
 
     def test_make_sample_atom(self):
         """
@@ -822,7 +823,7 @@ class TestGroup(unittest.TestCase):
         """
 
         test_grp = Group().from_adjacency_list("""
-1 *2 C u0 r0 {2,[S,D]}
+1 *2 C u0 r0 {2,[S,D]} 
 2 *1 C u[0,1] {1,[S,D]} {3,S}
 3    R!H     u0 r1 {2,S}
 """)
@@ -853,7 +854,7 @@ class TestGroup(unittest.TestCase):
 
     def test_generated_extensions_subgraphs(self):
         test_grp = Group().from_adjacency_list("""
-1 *2 C u0 {2,[S,D]}
+1 *2 C u0 {2,[S,D]} 
 2 *1 C u[0,1] {1,[S,D]} {3,S}
 3    R!H     u0 {2,S}
 """)
@@ -1488,7 +1489,7 @@ graph G {
 2 [Cs,Cd,Ct,Cb] u0 {1,S} {3,S}
 3 [Cs,Cd,Ct,Cb,O2s,S2s] u0 {2,S} {4,S}
 4 N3s u0 {3,S} {5,S}
-5 P1s u0 {4,S}
+5 P1s u0 {4,S} 
 """)
         expected = {'C': 1, 'N': 1, 'P': 1}
         result = group.get_element_count()

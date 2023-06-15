@@ -181,7 +181,7 @@ class DecomposeTest(unittest.TestCase):
 
     def test_inchi_p_layer_zero_lp(self):
         """
-        Test that the p-layer containing an element with zero lone
+        Test that the p-layer containing an element with zero lone 
         pairs can be read correctly.
         """
         string = 'InChI=1S/XXXX/cXXX/hXXX/lp1(0)'

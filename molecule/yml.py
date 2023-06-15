@@ -35,17 +35,17 @@ Reaction Mechanism Simulator (RMS)
 import os
 import yaml
 
-from rmgpy.chemkin import load_chemkin_file
-from rmgpy.species import Species
-from rmgpy.reaction import Reaction
-from rmgpy.thermo.nasa import NASAPolynomial, NASA
-from rmgpy.thermo.wilhoit import Wilhoit
-from rmgpy.kinetics.arrhenius import Arrhenius, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
-from rmgpy.kinetics.falloff import Troe, ThirdBody, Lindemann
-from rmgpy.kinetics.chebyshev import Chebyshev
-from rmgpy.data.solvation import SolventData
-from rmgpy.kinetics.surface import StickingCoefficient
-from rmgpy.util import make_output_subdirectory
+from molecule.chemkin import load_chemkin_file
+from molecule.species import Species
+from molecule.reaction import Reaction
+from molecule.thermo.nasa import NASAPolynomial, NASA
+from molecule.thermo.wilhoit import Wilhoit
+from molecule.kinetics.arrhenius import Arrhenius, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
+from molecule.kinetics.falloff import Troe, ThirdBody, Lindemann
+from molecule.kinetics.chebyshev import Chebyshev
+from molecule.data.solvation import SolventData
+from molecule.kinetics.surface import StickingCoefficient
+from molecule.util import make_output_subdirectory
 
 
 def convert_chemkin_to_yml(chemkin_path, dictionary_path=None, output="chem.rms"):

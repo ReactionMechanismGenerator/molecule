@@ -43,8 +43,8 @@ cdef class RMGObject(object):
     cpdef dict as_dict(self):
         """
         A helper function for dumping objects as dictionaries for YAML files
-
-        Returns:
+        
+        Returns: 
             dict: A dictionary representation of the object
         """
         cdef dict output_dict
@@ -66,27 +66,30 @@ cdef class RMGObject(object):
     cpdef make_object(self, dict data, dict class_dict):
         """
         A helper function for constructing objects from a dictionary (used when loading YAML files)
-
+        
         Args:
             data (dict): The dictionary representation of the object
             class_dict (dict): A mapping of class names to the classes themselves
 
-        Returns:
+        Returns: 
             None
         """
         kwargs = recursive_make_object(data, class_dict, make_final_object=False)
+        for key in ['aux', 'mol']:
+            if key in kwargs.keys():
+                del kwargs[key]
         self.__init__(**kwargs)
 
 cpdef expand_to_dict(obj):
     """
-    Takes an object of any type (list, dict, str, int, float, RMGObject, etc.) and returns a dictionary representation
+    Takes an object of any type (list, dict, str, int, float, RMGObject, etc.) and returns a dictionary representation 
     of the object (useful for __repr__ methods and outputting to YAML). The function works recursively to all objects
     nested in the original object.
-
+    
     Args:
         obj (Any): Object to be represented by a dictionary
 
-    Returns:
+    Returns: 
         Any: dictionary representation of the object (dict, unless str, int, or float, which are returned as themselves)
 
     """
@@ -125,19 +128,18 @@ cpdef recursive_make_object(obj, class_dictionary, make_final_object=True):
     """
     Takes a dictionary representation of an object and recreates the object from the mapping of class strings to classes
     provided in class_dictionary. This operates recursively to recreate objects that were nested inside other objects.
-    The function can either return the arguments for the make_object method to make the final (topmost) object or can
+    The function can either return the arguments for the make_object method to make the final (topmost) object or can 
     return the recreated final object.
 
     Args:
-        obj (Any): dictionary representation of an object to be recreated
-        class_dictionary (dict): a dictionary mapping of class strings to classes
+        obj (Any): A dictionary representation of an object to be recreated
+        class_dictionary (dict): A dictionary mapping of class strings to classes
         make_final_object (bool): If True (default) the topmost object will be created and returned. Else, all nested
                                   objects will be recreated but only the keyword arguments needed to recreate the
                                   topmost object will be returned.
 
-    Returns:
+    Returns: 
         Any: recreated object (default) or dictionary of keyword arguments to recreate the final (topmost) object
-
     """
     if isinstance(obj, dict):
 

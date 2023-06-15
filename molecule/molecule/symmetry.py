@@ -225,29 +225,29 @@ def calculate_axis_symmetry_number(molecule):
     Get the axis symmetry number correction. The "axis" refers to a series
     of two or more cumulated double bonds (e.g. C=C=C, etc.). Corrections
     for single C=C bonds are handled in getBondSymmetryNumber().
-
+    
     Each axis (C=C=C) has the potential to double the symmetry number.
-    If an end has 0 or 1 groups (eg. =C=CJJ or =C=C-R) then it cannot
+    If an end has 0 or 1 groups (eg. =C=CJJ or =C=C-R) then it cannot 
     alter the axis symmetry and is disregarded::
-
+    
         A=C=C=C..        A-C=C=C=C-A
-
+        
           s=1                s=1
-
-    If an end has 2 groups that are different then it breaks the symmetry
+    
+    If an end has 2 groups that are different then it breaks the symmetry 
     and the symmetry for that axis is 1, no matter what's at the other end::
-
+    
         A\               A\         /A
           T=C=C=C=C-A      T=C=C=C=T
         B/               A/         \B
               s=1             s=1
-
-    If you have one or more ends with 2 groups, and neither end breaks the
+    
+    If you have one or more ends with 2 groups, and neither end breaks the 
     symmetry, then you have an axis symmetry number of 2::
-
-        A\         /B      A\
+    
+        A\         /B      A\         
           C=C=C=C=C          C=C=C=C-B
-        A/         \B      A/
+        A/         \B      A/         
               s=2                s=2
     """
 
@@ -331,7 +331,7 @@ def calculate_axis_symmetry_number(molecule):
         # Split remaining fragments of structure
         end_fragments = structure.split()
 
-        #
+        # 
         # there can be two groups at each end     A\         /B
         #                                           T=C=C=C=T
         #                                         A/         \B
@@ -427,7 +427,7 @@ def calculate_cyclic_symmetry_number(molecule):
                     symmetry_number *= num_sections
                     break
 
-        # look for flipping rotation.
+        # look for flipping rotation. 
         if size % 2 == 0:  # even length only has to go through half
             flipping_atom_indexes = list(range(size // 2))
         else:

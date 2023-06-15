@@ -33,23 +33,23 @@ from molecule.quantity cimport ScalarQuantity, ArrayQuantity
 ################################################################################
 
 cdef class Chebyshev(PDepKineticsModel):
-
+    
     cdef public ArrayQuantity _coeffs
     cdef public int degreeT
     cdef public int degreeP
     cdef public str kunits
-
+    
     cpdef double chebyshev(self, int n, double x)
-
+    
     cpdef double get_reduced_temperature(self, double T) except -1000
-
+    
     cpdef double get_reduced_pressure(self, double P) except -1000
-
+    
     cpdef double get_rate_coefficient(self, double T, double P=?) except -1
 
     cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray Plist, np.ndarray K, str kunits,
         int degreeT, int degreeP, double Tmin, double Tmax, double Pmin, double Pmax)
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
-
+    
     cpdef change_rate(self, double factor)

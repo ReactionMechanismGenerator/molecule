@@ -367,17 +367,17 @@ class TestGraph(unittest.TestCase):
     def test_vertex_connectivity_values(self):
         """
         Tests the vertex connectivity values as introduced by Morgan (1965).
-
+        
         First CV1 is the number of neighbours
         CV2 is the sum of neighbouring CV1 values
         CV3 is the sum of neighbouring CV2 values
-
+        
         Graph:     Expected (and tested) values:
-
+        
         0-1-2-3-4            1-3-2-2-1   3-4-5-3-2    4-11-7-7-3
         |                    |           |             |
         5                    1           3             4
-
+        
         """
         vertices = [Vertex() for _ in range(6)]
         edges = [
@@ -449,8 +449,8 @@ class TestGraph(unittest.TestCase):
     def test_isomorphism_disconnected(self):
         """
         Check the graph isomorphism for broken graphs.
-
-        This tries to match graphs with a missing bond,
+        
+        This tries to match graphs with a missing bond, 
         eg. [ 0-1-2-3-4  5 ] should match [ 0-1-2-3-4  5 ]
         """
 
@@ -617,7 +617,7 @@ class TestGraph(unittest.TestCase):
         edge2 = Edge(self.graph.vertices[0], self.graph.vertices[5])
         self.graph.add_edge(edge2)  # Create another cycle to generate two fused cycles
         self.assertEqual(len(self.graph.get_all_polycyclic_vertices()), 2)
-        # Add new vertices and edges to generate a spirocyclic cycle
+        # Add new vertices and edges to generate a spirocyclic cycle      
         vertices = [Vertex() for _ in range(2)]
         for vertex in vertices:
             self.graph.add_vertex(vertex)

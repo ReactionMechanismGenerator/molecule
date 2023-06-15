@@ -37,7 +37,7 @@ import molecule.quantity as quantity
 
 cdef class KineticsData(KineticsModel):
     """
-    A kinetics model based on an array of rate coefficient data vs. temperature.
+    A kinetics model based on an array of rate coefficient data vs. temperature. 
     The attributes are:
 
     =============== =============================================================
@@ -51,7 +51,7 @@ cdef class KineticsData(KineticsModel):
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
-
+    
     """
 
     def __init__(self, Tdata=None, kdata=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
@@ -95,8 +95,8 @@ cdef class KineticsData(KineticsModel):
 
     cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
         """
-        Return the rate coefficient in the appropriate combination of m^3,
-        mol, and s at temperature `T` in K.
+        Return the rate coefficient in the appropriate combination of m^3, 
+        mol, and s at temperature `T` in K. 
         """
         cdef np.ndarray[np.float64_t, ndim=1] Tdata, kdata
         cdef double Tlow, Thigh, klow, khigh
@@ -155,7 +155,7 @@ cdef class PDepKineticsData(PDepKineticsModel):
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
     `comment`       Information about the model (e.g. its source)
     =============== =============================================================
-
+    
     """
 
     def __init__(self, Tdata=None, Pdata=None, kdata=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
@@ -208,8 +208,8 @@ cdef class PDepKineticsData(PDepKineticsModel):
 
     cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
         """
-        Return the rate coefficient in the appropriate combination of m^3,
-        mol, and s at temperature `T` in K and pressure `P` in Pa.
+        Return the rate coefficient in the appropriate combination of m^3, 
+        mol, and s at temperature `T` in K and pressure `P` in Pa. 
         """
         cdef np.ndarray[np.float64_t, ndim=1] Tdata, Pdata
         cdef np.ndarray[np.float64_t, ndim=2] kdata

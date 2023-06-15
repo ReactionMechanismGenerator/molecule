@@ -35,10 +35,10 @@ from molecule.quantity cimport ScalarQuantity, ArrayQuantity
 ################################################################################
 
 cdef class ThermoData(HeatCapacityModel):
-
+    
     cdef public ScalarQuantity _H298, _S298
     cdef public ArrayQuantity _Tdata, _Cpdata
-
+    
     cpdef double get_heat_capacity(self, double T) except -1000000000
 
     cpdef double get_enthalpy(self, double T) except 1000000000

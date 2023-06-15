@@ -221,7 +221,7 @@ class KineticsDatabase(object):
     def load_libraries(self, path, libraries=None):
         """
         Load the listed kinetics libraries from the given `path` on disk.
-
+        
         Loads them all if `libraries` list is not specified or `None`.
         The `path` points to the folder of kinetics libraries in the database,
         and the libraries should be in files like :file:`<path>/<library>.py`.
@@ -230,17 +230,20 @@ class KineticsDatabase(object):
         if libraries is not None:
             for library_name in libraries:
                 library_file = os.path.join(path, library_name, 'reactions.py')
-                if os.path.exists(library_file):
-                    logging.info('Loading kinetics library {0} from {1}...'.format(library_name, library_file))
+                if os.path.exists(library_name):
+                    library_file = os.path.join(library_name, 'reactions.py')
+                    short_library_name = os.path.split(library_name)[-1]
+                    logging.info(f'Loading kinetics library {short_library_name} from {library_name}...')
+                    library = KineticsLibrary(label=short_library_name)
+                    library.load(library_file, self.local_context, self.global_context)
+                    self.libraries[library.label] = library
+                elif os.path.exists(library_file):
+                    logging.info(f'Loading kinetics library {library_name} from {library_file}...')
                     library = KineticsLibrary(label=library_name)
                     library.load(library_file, self.local_context, self.global_context)
                     self.libraries[library.label] = library
                 else:
-                    if library_name == "KlippensteinH2O2":
-                        logging.info("""\n** Note: The KlippensteinH2O2 library was replaced and is no longer available in RMG.
-For H2 combustion chemistry consider using either the BurkeH2inN2 or BurkeH2inArHe
-library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n""")
-                    raise IOError("Couldn't find kinetics library {0}".format(library_file))
+                    raise IOError(f"Couldn't find kinetics library {library_file}")
 
         else:
             # load all the libraries you can find
@@ -252,7 +255,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                     if ext.lower() == '.py':
                         library_file = os.path.join(root, f)
                         label = os.path.dirname(library_file)[len(path) + 1:]
-                        logging.info('Loading kinetics library {0} from {1}...'.format(label, library_file))
+                        logging.info(f'Loading kinetics library {label} from {library_file}...')
                         library = KineticsLibrary(label=label)
                         try:
                             library.load(library_file, self.local_context, self.global_context)
@@ -275,7 +278,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         self.save_libraries(os.path.join(path, 'libraries'))
 
     def save_recommended_families(self, path):
-        """
+        """ 
         Save the recommended families to [path]/recommended.py.
         The old style was as a dictionary named `recommendedFamilies`.
         The new style is as multiple sets with different labels.
@@ -290,7 +293,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                 # For backwards compatibility with the old system of recommended families
                 f.write("""# This file contains a dictionary of kinetics families.  The families
 # set to `True` are recommended by RMG and turned on by default by setting
-# kineticsFamilies = 'default' in the RMG input file. Families set to `False`
+# kineticsFamilies = 'default' in the RMG input file. Families set to `False` 
 # are not turned on by default because the family is severely lacking in data.
 # These families should only be turned on with caution.""")
                 f.write('\n\n')
@@ -307,7 +310,7 @@ This file contains multiple sets of suggested kinetics families for various
 systems of interest. They can be used by including the name of a set in the
 kineticsFamilies part of the input file. Multiple sets can be specified at the
 same time, and union of them will be loaded. These sets can also be specified
-along with individual families. Custom sets can be easily defined in this file
+along with individual families. Custom sets can be easily defined in this file 
 and immediately used in input files without any additional changes.
 """
 ''')
@@ -394,7 +397,7 @@ and immediately used in input files without any additional changes.
             f.write("""
 ////////////////////////////////////////////////////////////////////////////////
 //
-// REACTION FAMILIES USED BY RMG
+// REACTION FAMILIES USED BY RMG 
 //
 // Notes:
 //
@@ -575,15 +578,15 @@ and immediately used in input files without any additional changes.
         """
         For a given `entry` for a reaction of the given reaction `family` (the
         string label of the family), return the reaction with kinetics and
-        degeneracy for the "forward" direction as defined by the reaction
+        degeneracy for the "forward" direction as defined by the reaction 
         family. For families that are their own reverse, the direction the
-        kinetics is given in will be preserved. If the entry contains
-        functional groups for the reactants, assume that it is given in the
+        kinetics is given in will be preserved. If the entry contains 
+        functional groups for the reactants, assume that it is given in the 
         forward direction and do nothing. Returns the reaction in the direction
         consistent with the reaction family template, and the matching template.
         Note that the returned reaction will have its kinetics and degeneracy
         set appropriately.
-
+        
         In order to reverse the reactions that are given in the reverse of the
         direction the family is defined, we need to compute the thermodynamics
         of the reactants and products. For this reason you must also pass
@@ -686,16 +689,16 @@ and immediately used in input files without any additional changes.
 
     def extract_source_from_comments(self, reaction):
         """
-        `reaction`: A reaction object containing kinetics data and kinetics data comments.
+        `reaction`: A reaction object containing kinetics data and kinetics data comments.  
             Should be either a PDepReaction, LibraryReaction, or TemplateReaction object
             as loaded from the molecule.chemkin.load_chemkin_file function
-
+        
         Parses the verbose string of comments from the thermo data of the species object,
         and extracts the thermo sources.
 
         Returns a dictionary with keys of either 'Rate Rules', 'Training', 'Library', or 'PDep'.
         A reaction can only be estimated using one of these methods.
-
+        
         source = {'RateRules': (Family_Label, OriginalTemplate, RateRules),
                   'Library': String_Name_of_Library_Used,
                   'PDep': Network_Index,
@@ -733,9 +736,9 @@ and immediately used in input files without any additional changes.
         """
         Reaction is the original reaction with original kinetics.
         Note that for Library and PDep reactions this function does not do anything other than return the original kinetics...
-
+        
         You must enter source data in the appropriate format such as returned from returned from self.extract_source_from_comments,
-        self-constructed.
+        self-constructed.  
         fix_barrier_height and force_positive_barrier will change the kinetics based on the Reaction.fix_barrier_height function.
         Return Arrhenius form kinetics if the source is from training reaction or rate rules.
         """

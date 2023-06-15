@@ -227,11 +227,14 @@ cdef class Arrhenius(KineticsModel):
         """
         self._A.value_si *= factor
 
-    def to_cantera_kinetics(self):
+    def to_cantera_kinetics(self, arrhenius_class=False):
         """
-        Converts the Arrhenius object to a cantera Arrhenius object
+        Converts the RMG Arrhenius object to a cantera ArrheniusRate or
+        the auxiliary cantera Arrhenius class (used by falloff reactions). 
+        Inputs for both are (A,b,E)  where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol
 
-        Arrhenius(A,b,E) where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol
+        arrhenius_class: If ``True``, uses cantera.Arrhenius (for falloff reactions). If ``False``, uses 
+        Cantera.ArrheniusRate
         """
 
         import cantera as ct
@@ -261,15 +264,18 @@ cdef class Arrhenius(KineticsModel):
 
         b = self._n.value_si
         E = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
-        return ct.Arrhenius(A, b, E)
+        if arrhenius_class:
+            return ct.Arrhenius(A, b, E)
+        else:
+            return ct.ArrheniusRate(A, b, E)
 
     def set_cantera_kinetics(self, ct_reaction, species_list):
         """
-        Passes in a cantera ElementaryReaction() object and sets its
-        rate to a Cantera Arrhenius() object.
+        Passes in a cantera Reaction() object and sets its
+        rate to a Cantera ArrheniusRate object.
         """
         import cantera as ct
-        assert isinstance(ct_reaction, ct.ElementaryReaction), "Must be a Cantera ElementaryReaction object"
+        assert isinstance(ct_reaction.rate, ct.ArrheniusRate), "Must have a Cantera ArrheniusRate attribute"
 
         # Set the rate parameter to a cantera Arrhenius object
         ct_reaction.rate = self.to_cantera_kinetics()
@@ -449,7 +455,7 @@ cdef class ArrheniusEP(KineticsModel):
 
     def set_cantera_kinetics(self, ct_reaction, species_list):
         """
-        Sets a cantera ElementaryReaction() object with the modified Arrhenius object
+        Sets a cantera Reaction() object with the modified Arrhenius object
         converted to an Arrhenius form.
         """
         raise NotImplementedError('set_cantera_kinetics() is not implemented for ArrheniusEP class kinetics.')
@@ -604,7 +610,7 @@ cdef class ArrheniusBM(KineticsModel):
             A = rxn.kinetics.A.value_si
             n = rxn.kinetics.n.value_si
             Ea = rxn.kinetics.Ea.value_si
-
+            
             def kfcn(E0):
                 Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
                 out = Ea - (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
@@ -619,7 +625,7 @@ cdef class ArrheniusBM(KineticsModel):
             self.Tmax = rxn.kinetics.Tmax
             self.comment = 'Fitted to {0} reaction at temperature: {1} K'.format(len(rxns), T)
         else:
-            # define optimization function
+            # define optimization function            
             def kfcn(xs, lnA, n, E0):
                 T = xs[:,0]
                 dHrxn = xs[:,1]
@@ -628,7 +634,7 @@ cdef class ArrheniusBM(KineticsModel):
                 Ea = np.where(dHrxn< -4.0*E0, 0.0, Ea)
                 Ea = np.where(dHrxn > 4.0*E0, dHrxn, Ea)
                 return lnA + np.log(T ** n * np.exp(-Ea / (8.314 * T)))
-
+              
             # get (T,dHrxn(T)) -> (Ln(k) mappings
             xdata = []
             ydata = []
@@ -703,7 +709,7 @@ cdef class ArrheniusBM(KineticsModel):
 
     def set_cantera_kinetics(self, ct_reaction, species_list):
         """
-        Sets a cantera ElementaryReaction() object with the modified Arrhenius object
+        Sets a cantera Reaction() object with the modified Arrhenius object
         converted to an Arrhenius form.
         """
         raise NotImplementedError('set_cantera_kinetics() is not implemented for ArrheniusBM class kinetics.')
@@ -863,12 +869,13 @@ cdef class PDepArrhenius(PDepKineticsModel):
         """
         import cantera as ct
         import copy
-        assert isinstance(ct_reaction, ct.PlogReaction), "Must be a Cantera PlogReaction object"
+        assert isinstance(ct_reaction.rate, ct.PlogRate), "Must have a Cantera PlogRate attribute"
 
         pressures = copy.deepcopy(self._pressures.value_si)
-        ctArrhenius = [arr.to_cantera_kinetics() for arr in self.arrhenius]
+        ctArrhenius = [arr.to_cantera_kinetics(arrhenius_class=True) for arr in self.arrhenius]
 
-        ct_reaction.rates = list(zip(pressures, ctArrhenius))
+        new_rates = ct.PlogRate(list(zip(pressures, ctArrhenius)))
+        ct_reaction.rate = new_rates
 
 ################################################################################
 

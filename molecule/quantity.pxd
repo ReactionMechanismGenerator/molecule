@@ -30,7 +30,7 @@ cimport numpy as np
 from molecule.rmgobject cimport RMGObject
 
 
-cpdef list NOT_IMPLEMENTED_UNITS
+cdef list NOT_IMPLEMENTED_UNITS
 
 ################################################################################
 
@@ -43,7 +43,7 @@ cdef class Units(RMGObject):
     cpdef double get_conversion_factor_from_si(self) except -1
 
     cpdef double get_conversion_factor_from_si_to_cm_mol_s(self) except -1
-
+    
 ################################################################################
 
 cdef class ScalarQuantity(Units):
@@ -57,7 +57,7 @@ cdef class ScalarQuantity(Units):
     cpdef bint is_uncertainty_additive(self) except -2
 
     cpdef bint is_uncertainty_multiplicative(self) except -2
-
+    
     cpdef ScalarQuantity copy(self)
 
 ################################################################################
@@ -73,5 +73,5 @@ cdef class ArrayQuantity(Units):
     cpdef bint is_uncertainty_additive(self) except -2
 
     cpdef bint is_uncertainty_multiplicative(self) except -2
-
+    
     cpdef ArrayQuantity copy(self)

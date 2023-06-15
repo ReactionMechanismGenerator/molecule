@@ -34,13 +34,13 @@ from molecule.quantity cimport ScalarQuantity, ArrayQuantity
 ################################################################################
 
 cdef class StickingCoefficient(KineticsModel):
-
+    
     cdef public ScalarQuantity _A
     cdef public ScalarQuantity _n
     cdef public ScalarQuantity _Ea
     cdef public ScalarQuantity _T0
     cdef public dict _coverage_dependence
-
+    
     cpdef double get_sticking_coefficient(self, double T) except -1
 
     cpdef change_t0(self, double T0)
@@ -48,7 +48,7 @@ cdef class StickingCoefficient(KineticsModel):
     cpdef fit_to_data(self, np.ndarray Tlist, np.ndarray klist, str kunits, double T0=?, np.ndarray weights=?, bint three_params=?)
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
-
+    
     cpdef change_rate(self, double factor)
 
     cpdef to_html(self)
@@ -74,3 +74,4 @@ cdef class SurfaceArrhenius(Arrhenius):
 cdef class SurfaceArrheniusBEP(ArrheniusEP):
     cdef public dict _coverage_dependence
     pass
+

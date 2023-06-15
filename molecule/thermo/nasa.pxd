@@ -36,27 +36,27 @@ cdef class NASAPolynomial(HeatCapacityModel):
     cdef public double cm2, cm1, c0, c1, c2, c3, c4, c5, c6
 
     cpdef dict as_dict(self)
-
+    
     cpdef double get_heat_capacity(self, double T) except -1000000000
 
     cpdef double get_enthalpy(self, double T) except 1000000000
 
     cpdef double get_entropy(self, double T) except -1000000000
 
-    cpdef double get_free_energy(self, double T) except 1000000000
-
+    cpdef double get_free_energy(self, double T) except 1000000000    
+    
     cpdef change_base_enthalpy(self, double deltaH)
 
     cpdef change_base_entropy(self, double deltaS)
 
     cdef double integral2_T0(self, double T)
-
+    
     cdef double integral2_TM1(self, double T)
-
+    
 cdef class NASA(HeatCapacityModel):
 
     cdef public NASAPolynomial poly1, poly2, poly3
-
+    
     cpdef NASAPolynomial select_polynomial(self, double T)
 
     cpdef dict as_dict(self)
@@ -72,7 +72,7 @@ cdef class NASA(HeatCapacityModel):
     cpdef ThermoData to_thermo_data(self)
 
     cpdef Wilhoit to_wilhoit(self)
-
+    
     cpdef NASA change_base_enthalpy(self, double deltaH)
 
     cpdef NASA change_base_entropy(self, double deltaS)

@@ -43,7 +43,7 @@ RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
 cdef class StickingCoefficient(KineticsModel):
     """
     A kinetics model to give Sticking Coefficients for surface adsorption,
-    following Arrhenius form.
+    following Arrhenius form. 
     Similar to :class:`Arrhenius` but with different units for `A`.
     The attributes are:
 
@@ -64,7 +64,7 @@ cdef class StickingCoefficient(KineticsModel):
                              `E`, the activation energy dependence on coverage.
     `comment`               Information about the model (e.g. its source)
     ======================= =============================================================
-
+    
     """
 
     def __init__(self, A=None, n=0.0, Ea=None, T0=(1.0, "K"), Tmin=None, Tmax=None, Pmin=None, Pmax=None,
@@ -145,7 +145,7 @@ cdef class StickingCoefficient(KineticsModel):
 
     cpdef double get_sticking_coefficient(self, double T) except -1:
         """
-        Return the sticking coefficient (dimensionless) at temperature `T` in K.
+        Return the sticking coefficient (dimensionless) at temperature `T` in K. 
         """
         cdef double A, n, Ea, T0, stickingCoefficient
         A = self._A.value_si
@@ -214,7 +214,7 @@ cdef class StickingCoefficient(KineticsModel):
 
     cpdef change_t0(self, double T0):
         """
-        Changes the reference temperature used in the exponent to `T0` in K,
+        Changes the reference temperature used in the exponent to `T0` in K, 
         and adjusts the preexponential factor accordingly.
         """
         self._A.value_si /= (self._T0.value_si / T0) ** self._n.value_si
@@ -272,9 +272,9 @@ cdef class StickingCoefficient(KineticsModel):
 ################################################################################
 cdef class StickingCoefficientBEP(KineticsModel):
     """
-    A kinetics model based on the Arrhenius expression, to give
+    A kinetics model based on the Arrhenius expression, to give 
     Sticking Coefficient for surface adsorption, using the
-    Bronsted-Evans-Polanyi equation to determine the activation energy.
+    Bronsted-Evans-Polanyi equation to determine the activation energy. 
     Similar to :class:`ArrheniusEP`, but with different units for `A`.
     Sticking Coefficients are between 0 and 1.
     The attributes are:
@@ -296,7 +296,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
                              `E`, the activation energy dependence on coverage.
     `comment`               Information about the model (e.g. its source)
     ======================= =============================================================
-
+    
     """
 
     def __init__(self, A=None, n=0.0, alpha=0.0, E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None,
@@ -379,7 +379,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
     cpdef double get_sticking_coefficient(self, double T, double dHrxn=0.0) except -1:
         """
         Return the sticking coefficient (dimensionless) at
-        temperature `T` in K and enthalpy of reaction `dHrxn` in J/mol.
+        temperature `T` in K and enthalpy of reaction `dHrxn` in J/mol. 
         """
         cdef double A, n, Ea, stickingCoefficient
         Ea = self.get_activation_energy(dHrxn)
@@ -408,7 +408,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
         """
         Return an :class:`StickingCoefficient` instance of the kinetics model using the
         given enthalpy of reaction `dHrxn` to determine the activation energy.
-
+        
         Note that despite its name it does not return a :class:`Arrhenius` object.
         """
         return StickingCoefficient(
@@ -455,9 +455,9 @@ cdef class StickingCoefficientBEP(KineticsModel):
 cdef class SurfaceArrhenius(Arrhenius):
     """
     A kinetics model based on (modified) Arrhenius for surface reactions.
-
+    
     It is very similar to the gas phase :class:`Arrhenius`
-
+    
     The attributes are:
 
     ======================= =============================================================
@@ -490,8 +490,8 @@ cdef class SurfaceArrhenius(Arrhenius):
         self.coverage_dependence = coverage_dependence
 
     property A:
-        """The preexponential factor.
-
+        """The preexponential factor. 
+    
         This is the only thing different from a normal Arrhenius class."""
         def __get__(self):
             return self._A
@@ -543,13 +543,13 @@ cdef class SurfaceArrhenius(Arrhenius):
 cdef class SurfaceArrheniusBEP(ArrheniusEP):
     """
     A kinetics model based on the (modified) Arrhenius equation, using the
-    Bronsted-Evans-Polanyi equation to determine the activation energy.
-
+    Bronsted-Evans-Polanyi equation to determine the activation energy. 
+    
     It is very similar to the gas-phase :class:`ArrheniusEP`.
     The only differences being the A factor has different units,
     (and the catalysis community prefers to call it BEP rather than EP!)
     and has a coverage_dependence parameter for coverage dependence
-
+    
     The attributes are:
 
     ======================= =============================================================
@@ -570,7 +570,7 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
     `uncertainty`           Uncertainty information
     `comment`               Information about the model (e.g. its source)
     ======================= =============================================================
-
+    
     """
     def __init__(self, A=None, n=0.0, alpha=0.0, E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None,
                  coverage_dependence=None, comment=''):
@@ -583,8 +583,8 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
         self.coverage_dependence = coverage_dependence
 
     property A:
-        """The preexponential factor.
-
+        """The preexponential factor. 
+    
         This is the only thing different from a normal ArrheniusEP class."""
         def __get__(self):
             return self._A
@@ -636,9 +636,9 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
         """
         Return an :class:`SurfaceArrhenius` instance of the kinetics model using the
         given enthalpy of reaction `dHrxn` to determine the activation energy.
-
+        
         Note that despite its name it does not return a :class:`Arrhenius` object
-        (although :class:`SurfaceArrhenius` is a subclass of :class:`Arrhenius`
+        (although :class:`SurfaceArrhenius` is a subclass of :class:`Arrhenius` 
         so in a way, it does).
         """
         return SurfaceArrhenius(

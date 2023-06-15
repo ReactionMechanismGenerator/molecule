@@ -55,7 +55,7 @@ RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
 
 class KineticsGroups(Database):
     """
-    A class for working with an RMG kinetics family group additivity values.
+    A class for working with an RMG kinetics family group additivity values. 
     """
 
     def __init__(self,
@@ -204,7 +204,7 @@ class KineticsGroups(Database):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using group additivity.
-
+        
         Returns just the kinetics.
         """
         warnings.warn("Group additivity is no longer supported and may be"
@@ -239,7 +239,7 @@ class KineticsGroups(Database):
     def _multiply_kinetics_data(self, kinetics1, kinetics2):
         """
         Multiply two kinetics objects `kinetics1` and `kinetics2` of the same
-        class together, returning their product as a new kinetics object of
+        class together, returning their product as a new kinetics object of 
         that class. Currently this only works for :class:`KineticsData`, :class:`ArrheniusEP` or
         :class:`Arrhenius` objects.
         """

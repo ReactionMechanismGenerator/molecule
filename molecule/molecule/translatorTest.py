@@ -85,9 +85,9 @@ class InChIGenerationTest(unittest.TestCase):
 
         adjlist = """
 1 C 0 {2,D} {5,S}
-2 C 0 {1,D} {3,S}
-3 C 0 {2,S} {4,D}
-4 C 0 {3,D} {5,S}
+2 C 0 {1,D} {3,S} 
+3 C 0 {2,S} {4,D} 
+4 C 0 {3,D} {5,S} 
 5 C 1 {4,S} {1,S}
         """
 
@@ -269,7 +269,7 @@ multiplicity 2
 
     def test_c7h9(self):
         adjlist = """
-1 C 0 {4,D}
+1 C 0 {4,D} 
 2 C 0 {5,D}
 3 C 1 {6,S}
 4 C 0 {1,D} {7,S}

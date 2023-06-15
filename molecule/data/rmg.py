@@ -123,7 +123,7 @@ class RMGDatabase(object):
 
     def load_transport(self, path, transport_libraries=None):
         """
-        Load the RMG transport database from the given 'path' on disk, where
+        Load the RMG transport database from the given 'path' on disk, where 
         'path' points to the top-level folder of the RMG transport database.
         """
         self.transport = TransportDatabase()

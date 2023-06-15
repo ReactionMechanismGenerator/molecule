@@ -288,7 +288,7 @@ class KineticsLibrary(Database):
     def check_for_duplicates(self, mark_duplicates=False):
         """
         Check that all duplicate reactions in the kinetics library are
-        properly marked (i.e. with their ``duplicate`` attribute set to
+        properly marked (i.e. with their ``duplicate`` attribute set to 
         ``True``).
         If ``mark_duplicates`` is set to ``True``, then ignore and
         mark all duplicate reactions as duplicate.
@@ -566,7 +566,7 @@ class KineticsLibrary(Database):
 
     def save(self, path):
         """
-        Save the current database to the file at location `path` on disk.
+        Save the current database to the file at location `path` on disk. 
         """
         try:
             os.makedirs(os.path.dirname(path))

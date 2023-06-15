@@ -2,7 +2,7 @@ import numpy as np
 
 def matches_resolve(matches, rr_ll_list):
 	"""
-	Sort out the pair of fragments and correct the amount. If the pair
+	Sort out the pair of fragments and correct the amount. If the pair 
 	contains additional cutting label, it will be added into new_r_l_moles
 	for further matching with other pairs.
 	"""
@@ -44,7 +44,7 @@ def shuffle(conc, seed=None):
 
 def grind(conc, size):
 	"""
-	Split fragment concentrations into several repeating concentration units with specified size
+	Split fragment concentrations into several repeating concentration units with specified size 
 	"""
 	grinded_conc = []
 	for label, c in conc:
@@ -60,8 +60,8 @@ def match_concentrations_with_same_sums(conc1, conc2, diff_tol=1e-6):
 	"""
 	Given two lists with each item to be a tuple
 	(species label, concentration)
-	conc1 and conc2 with same total concentrations,
-	the method returns matched species labels and
+	conc1 and conc2 with same total concentrations, 
+	the method returns matched species labels and 
 	concentrations.
 
 	Example:
@@ -104,8 +104,8 @@ def match_concentrations_with_different_sums(conc1, conc2):
 	"""
 	Given two lists with each item to be a tuple
 	(species label, concentration)
-	conc1 and conc2 with different total concentrations,
-	the method returns matched species labels and
+	conc1 and conc2 with different total concentrations, 
+	the method returns matched species labels and 
 	concentrations.
 
 	Example:
@@ -183,7 +183,7 @@ def match_concentrations_with_different_sums(conc1, conc2):
 def match_sequences(seq1, seq2, diff_tol=1e-6):
 	"""
 	Given two lists (each item is int or float):
-	seq1 and seq2 with same sum, the method returns
+	seq1 and seq2 with same sum, the method returns 
 	matched indices and values.
 
 	Example:
@@ -253,9 +253,9 @@ def match_sequences(seq1, seq2, diff_tol=1e-6):
 
 def flatten(combo):
 	"""
-	Given a combo nested `tuple`, e.g.,
+	Given a combo nested `tuple`, e.g., 
 	((('LY', 'XR'), ('LWL', 'RUR'))
-	return a list of labels contained in
+	return a list of labels contained in 
 	the combo ['LY', 'XR', 'LWL', 'RUR']
 	"""
 	return_list = []

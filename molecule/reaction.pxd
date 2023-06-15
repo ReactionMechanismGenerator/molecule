@@ -26,10 +26,13 @@
 ###############################################################################
 
 cimport molecule.constants as constants
-from molecule.species cimport Species
+from molecule.species cimport Species, TransitionState
 from molecule.molecule.molecule cimport Atom, Molecule
 from molecule.molecule.graph cimport Vertex, Graph
 from molecule.molecule.element cimport Element
+from molecule.kinetics.model cimport KineticsModel
+from molecule.kinetics.arrhenius cimport Arrhenius
+from molecule.kinetics.surface cimport SurfaceArrhenius, StickingCoefficient
 
 cimport numpy as np
 
@@ -42,7 +45,10 @@ cdef class Reaction:
     cdef public list products
     cdef public Species specific_collider
     cdef public bint reversible
-    cdef public object transition_state
+    cdef public TransitionState transition_state
+    cdef public KineticsModel kinetics
+    cdef public Arrhenius network_kinetics
+    cdef public SurfaceArrhenius
     cdef public bint duplicate
     cdef public float _degeneracy
     cdef public list pairs

@@ -419,7 +419,7 @@ def _openbabel_translator(input_object, identifier_type, mol=None):
         obmol.AddHydrogens()
         # In OpenBabel 3+ the function obmol.AssignSpinMultiplicity(True) does nothing.
         # We could write our own method here and call obatom.SetSpinMultiplicity on
-        # each atom, but instead we will leave them blank for now and fix them
+        # each atom, but instead we will leave them blank for now and fix them 
         # in the from_ob_mol() method.
         if mol is None:
             mol = mm.Molecule()

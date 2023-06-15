@@ -344,7 +344,7 @@ multiplicity 2
 17    H u0 p0 c0 {8,S}
 """)]
         expected_product = Molecule().from_adjacency_list("""
-1  *2 C u0 p0 c0 {2,D} {3,S} {4,S}
+1  *2 C u0 p0 c0 {2,D} {3,S} {4,S} 
 2  *3 C u0 p0 c0 {1,D} {5,S} {6,S}
 3  *1 C u0 p0 c0 {1,S} {7,S} {11,S} {10,S}
 4     C u0 p0 c0 {1,S} {8,D} {12,S}

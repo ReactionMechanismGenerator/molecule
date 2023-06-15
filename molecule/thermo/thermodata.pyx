@@ -42,7 +42,7 @@ cdef class ThermoData(HeatCapacityModel):
     """
     A heat capacity model based on a set of discrete heat capacity data points.
     The attributes are:
-
+    
     =============== ============================================================
     Attribute       Description
     =============== ============================================================
@@ -55,7 +55,7 @@ cdef class ThermoData(HeatCapacityModel):
     `E0`            The energy at zero Kelvin (including zero point energy)
     `comment`       Information about the model (e.g. its source)
     =============== ============================================================
-
+    
     """
 
     def __init__(self, Tdata=None, Cpdata=None, H298=None, S298=None, Cp0=None, CpInf=None, Tmin=None, Tmax=None, E0=None, label = '',comment=''):
@@ -64,7 +64,7 @@ cdef class ThermoData(HeatCapacityModel):
         self.S298 = S298
         self.Tdata = Tdata
         self.Cpdata = Cpdata
-
+    
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
@@ -127,13 +127,13 @@ cdef class ThermoData(HeatCapacityModel):
         cdef double Tlow, Thigh, Cplow, Cphigh
         cdef double Cp
         cdef int i, N
-
+        
         Tdata = self._Tdata.value_si
         Cpdata = self._Cpdata.value_si
         Cp0 = self._Cp0.value_si if self._Cp0 is not None else 0.0
         CpInf = self._CpInf.value_si if self._CpInf is not None else 0.0
         N = Cpdata.shape[0]
-
+        
         # If T is outside the range of Cp data, make sure we have a value of
         # Cp0 or CpInf we need for reasonable extrapolation
         # Allow a small window of safe extrapolation past each endpoint
@@ -164,9 +164,9 @@ cdef class ThermoData(HeatCapacityModel):
                 if Tlow <= T and T <= Thigh:
                     Cp = (Cphigh - Cplow) * ((T - Tlow) / (Thigh - Tlow)) + Cplow
                     break
-
+                
         return Cp
-
+    
     @cython.boundscheck(False)
     @cython.wraparound(False)
     cpdef double get_enthalpy(self, double T) except 1000000000:
@@ -186,7 +186,7 @@ cdef class ThermoData(HeatCapacityModel):
         N = Cpdata.shape[0]
 
         H = self._H298.value_si
-
+        
         # If T is outside the range of Cp data, make sure we have a value of
         # Cp0 or CpInf we need for reasonable extrapolation
         # Allow a small window of safe extrapolation past each endpoint
@@ -203,7 +203,7 @@ cdef class ThermoData(HeatCapacityModel):
         slope = (Cphigh - Cplow) / (Thigh - Tlow)
         intercept = (Cplow * Thigh - Cphigh * Tlow) / (Thigh - Tlow)
         H -= 0.5 * slope * (298*298 - Tlow*Tlow) + intercept * (298 - Tlow)
-
+        
         if T < Tdata[0]:
             Tlow = Tdata[0]; Thigh = Tdata[1]
             Cplow = Cpdata[0]; Cphigh = Cpdata[1]
@@ -214,14 +214,14 @@ cdef class ThermoData(HeatCapacityModel):
                 H += 0.5 * slope * (T*T - Tlow*Tlow) + intercept * (T - Tlow)
             else:
                 H += 0.5 * slope * (T0*T0 - Tlow*Tlow) + intercept * (T0 - Tlow) + Cp0 * (T0 - T)
-
+        
         for i in range(N-1):
             Tlow = Tdata[i]; Thigh = Tdata[i+1]
             Cplow = Cpdata[i]; Cphigh = Cpdata[i+1]
             if T > Tlow:
                 slope = (Cphigh - Cplow) / (Thigh - Tlow)
                 intercept = (Cplow * Thigh - Cphigh * Tlow) / (Thigh - Tlow)
-                if T <= Thigh:
+                if T <= Thigh: 
                     H += 0.5 * slope * (T*T - Tlow*Tlow) + intercept * (T - Tlow)
                     break
                 else:
@@ -237,9 +237,9 @@ cdef class ThermoData(HeatCapacityModel):
                 H += 0.5 * slope * (T*T - Thigh*Thigh) + intercept * (T - Thigh)
             else:
                 H += 0.5 * slope * (T0*T0 - Thigh*Thigh) + intercept * (T0 - Thigh) + CpInf * (T - T0)
-
+        
         return H
-
+        
     @cython.boundscheck(False)
     @cython.wraparound(False)
     cpdef double get_entropy(self, double T) except -1000000000:
@@ -259,15 +259,15 @@ cdef class ThermoData(HeatCapacityModel):
         N = Cpdata.shape[0]
 
         S = self._S298.value_si
-
+         
         # Correct the entropy from 298 K to the temperature of the lowest heat capacity point
-        assert Tdata[0] > 298
+        assert Tdata[0] >= 298
         Tlow = Tdata[0]; Thigh = Tdata[1]
         Cplow = Cpdata[0]; Cphigh = Cpdata[1]
         slope = (Cphigh - Cplow) / (Thigh - Tlow)
         intercept = (Cplow * Thigh - Cphigh * Tlow) / (Thigh - Tlow)
         S -= slope * (298 - Tlow) + intercept * log(298 / Tlow)
-
+        
         # If T is outside the range of Cp data, make sure we have a value of
         # Cp0 or CpInf we need for reasonable extrapolation
         # Allow a small window of safe extrapolation past each endpoint
@@ -287,7 +287,7 @@ cdef class ThermoData(HeatCapacityModel):
                 S += slope * (T - Tlow) + intercept * log(T / Tlow)
             else:
                 S += slope * (T0 - Tlow) + intercept * log(T0 / Tlow) + Cp0 * log(T0 / T)
-
+        
         for i in range(N-1):
             Tlow = Tdata[i]; Thigh = Tdata[i+1]
             Cplow = Cpdata[i]; Cphigh = Cpdata[i+1]
@@ -317,7 +317,7 @@ cdef class ThermoData(HeatCapacityModel):
                     S += slope * (T0 - Thigh) + intercept * log(T0 / Thigh) + CpInf * log(T / T0)
 
         return S
-
+    
     cpdef double get_free_energy(self, double T) except 1000000000:
         """
         Return the Gibbs free energy in J/mol at the specified temperature
@@ -354,15 +354,15 @@ cdef class ThermoData(HeatCapacityModel):
         if 0.0 in [self.Cp0.value_si, self.CpInf.value_si]:
             raise Exception('Cannot convert Benson model to Wilhoit model; first specify Cp0 and CpInf.')
         from molecule.thermo.wilhoit import Wilhoit
-
+        
         Tdata = self._Tdata.value_si
         Cpdata = self._Cpdata.value_si
         H298 = self.get_enthalpy(298)
         S298 = self.get_entropy(298)
         Cp0 = self._Cp0.value_si
         CpInf = self._CpInf.value_si
-
-
+        
+        
         if B:
             return Wilhoit(label=self.label,comment=self.comment).fit_to_data_for_constant_b(Tdata, Cpdata, Cp0, CpInf, H298, S298, B=B)
         else:
@@ -375,29 +375,29 @@ cdef class ThermoData(HeatCapacityModel):
         well as the intermediate temperature `Tint` in K to use as the bridge
         between the two fitted polynomials. The remaining parameters can be
         used to modify the fitting algorithm used:
-
+        
         * `fixedTint` - ``False`` to allow `Tint` to vary in order to improve the fit, or ``True`` to keep it fixed
-
+    
         * `weighting` - ``True`` to weight the fit by :math:`T^{-1}` to emphasize good fit at lower temperatures, or ``False`` to not use weighting
-
+    
         * `continuity` - The number of continuity constraints to enforce at `Tint`:
-
+    
             - 0: no constraints on continuity of :math:`C_\\mathrm{p}(T)` at `Tint`
-
+    
             - 1: constrain :math:`C_\\mathrm{p}(T)` to be continous at `Tint`
-
+    
             - 2: constrain :math:`C_\\mathrm{p}(T)` and :math:`\\frac{d C_\\mathrm{p}}{dT}` to be continuous at `Tint`
-
+    
             - 3: constrain :math:`C_\\mathrm{p}(T)`, :math:`\\frac{d C_\\mathrm{p}}{dT}`, and :math:`\\frac{d^2 C_\\mathrm{p}}{dT^2}` to be continuous at `Tint`
-
+    
             - 4: constrain :math:`C_\\mathrm{p}(T)`, :math:`\\frac{d C_\\mathrm{p}}{dT}`, :math:`\\frac{d^2 C_\\mathrm{p}}{dT^2}`, and :math:`\\frac{d^3 C_\\mathrm{p}}{dT^3}` to be continuous at `Tint`
-
+    
             - 5: constrain :math:`C_\\mathrm{p}(T)`, :math:`\\frac{d C_\\mathrm{p}}{dT}`, :math:`\\frac{d^2 C_\\mathrm{p}}{dT^2}`, :math:`\\frac{d^3 C_\\mathrm{p}}{dT^3}`, and :math:`\\frac{d^4 C_\\mathrm{p}}{dT^4}` to be continuous at `Tint`
-
+            
         Note that values of `continuity` of 5 or higher effectively constrain all
         the coefficients to be equal and should be equivalent to fitting only one
         polynomial (rather than two).
-
+    
         Returns the fitted :class:`NASA` object containing the two fitted
         :class:`NASAPolynomial` objects.
         """
@@ -405,15 +405,17 @@ cdef class ThermoData(HeatCapacityModel):
 
     cpdef bint is_all_zeros(self):
         """
-        Check whether a ThermoData object has all zero values, e.g.:
-
+        Check whether a ThermoData object has all zero values
+        
+        e.g.::
+        
             ThermoData(
                 Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
                 Cpdata=([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "J/(mol*K)"),
                 H298=(0.0, "kJ/mol"),
                 S298=(0.0, "J/(mol*K)"),
             )
-
+        
         Returns:
             bool: Whether all values are zeroes or not.
         """

@@ -28,6 +28,8 @@ class CuttingLabel(Vertex):
         self.isotope = -1
         self.id = id
         self.mass = 0
+        self.site = ''
+        self.morphology = ''
 
     def __str__(self):
         """
@@ -58,7 +60,7 @@ class CuttingLabel(Vertex):
         """
         Return ``True`` if `other` is indistinguishable from this CuttingLabel, or
         ``False`` otherwise. If `other` is an :class:`CuttingLabel` object, then all
-        attributes must match exactly.
+        attributes must match exactly. 
         """
         if isinstance(other, CuttingLabel):
             return self.name == other.name
@@ -124,6 +126,7 @@ class CuttingLabel(Vertex):
         """
         return True
 
+
 class Fragment(Graph):
 
     def __init__(self,
@@ -147,6 +150,8 @@ class Fragment(Graph):
         self.props = props or {}
         self.multiplicity = multiplicity
         self.reactive = reactive
+        self.metal = ''
+        self.facet = ''
 
         if inchi and smiles:
             logging.warning('Both InChI and SMILES provided for Fragment instantiation, '
@@ -410,7 +415,7 @@ class Fragment(Graph):
             if isinstance(v, Atom) and v.is_carbon() and v.lone_pairs > 0:
                 carbenes += 1
         return carbenes
-
+    
     def get_radical_count(self):
         """
         Return the total number of radical electrons on all atoms in the
@@ -588,7 +593,7 @@ class Fragment(Graph):
 
     def is_subgraph_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False):
         """
-        Fragment's subgraph isomorphism check is done by first creating
+        Fragment's subgraph isomorphism check is done by first creating 
         a representative molecule of fragment, and then following same procedure
         of subgraph isomorphism check of `Molecule` object aganist `Group` object
         """
@@ -655,6 +660,19 @@ class Fragment(Graph):
         result = Graph.is_subgraph_isomorphic(self.mol_repr, other, new_initial_map)
         return result
 
+    def is_atom_in_cycle(self, atom):
+        """
+        Returns ``True`` if ``atom`` is in one or more cycles in the structure, ``False`` otherwise.
+        """
+        return self.is_vertex_in_cycle(atom)
+
+    def is_bond_in_cycle(self, bond):
+        """
+        Returns ``True`` if the bond between atoms ``atom1`` and ``atom2``
+        is in one or more cycles in the graph, ``False`` otherwise.
+        """
+        return self.is_edge_in_cycle(bond)
+
     def assign_representative_molecule(self):
 
         # create a molecule from fragment.vertices.copy
@@ -670,43 +688,43 @@ class Fragment(Graph):
             if isinstance(mapped_vertex, CuttingLabel):
 
                 # replace cutting label with atom C
-                atom_C1 = Atom(element=get_element('C'),
-                            radical_electrons=0,
-                            charge=0,
+                atom_C1 = Atom(element=get_element('C'), 
+                            radical_electrons=0, 
+                            charge=0, 
                             lone_pairs=0)
 
                 for bondedAtom, bond in mapped_vertex.edges.items():
                     new_bond = Bond(bondedAtom, atom_C1, order=bond.order)
-
+                    
                     bondedAtom.edges[atom_C1] = new_bond
                     del bondedAtom.edges[mapped_vertex]
 
                     atom_C1.edges[bondedAtom] = new_bond
 
                 # add hydrogens and carbon to make it CC
-                atom_H1 = Atom(element=get_element('H'),
-                            radical_electrons=0,
-                            charge=0,
+                atom_H1 = Atom(element=get_element('H'), 
+                            radical_electrons=0, 
+                            charge=0, 
                             lone_pairs=0)
 
-                atom_H2 = Atom(element=get_element('H'),
-                            radical_electrons=0,
-                            charge=0,
+                atom_H2 = Atom(element=get_element('H'), 
+                            radical_electrons=0, 
+                            charge=0, 
                             lone_pairs=0)
 
-                atom_C2 = Atom(element=get_element('C'),
-                            radical_electrons=0,
-                            charge=0,
+                atom_C2 = Atom(element=get_element('C'), 
+                            radical_electrons=0, 
+                            charge=0, 
                             lone_pairs=0)
 
-                atom_H3 = Atom(element=get_element('H'),
-                            radical_electrons=0,
-                            charge=0,
+                atom_H3 = Atom(element=get_element('H'), 
+                            radical_electrons=0, 
+                            charge=0, 
                             lone_pairs=0)
 
-                atom_H4 = Atom(element=get_element('H'),
-                            radical_electrons=0,
-                            charge=0,
+                atom_H4 = Atom(element=get_element('H'), 
+                            radical_electrons=0, 
+                            charge=0, 
                             lone_pairs=0)
 
                 atom_C3 = Atom(element=get_element('C'),
@@ -716,7 +734,7 @@ class Fragment(Graph):
 
                 atom_H5 = Atom(element=get_element('H'),
                             radical_electrons=0,
-                            charge=0,
+                            charge=0, 
                             lone_pairs=0)
 
                 atom_H6 = Atom(element=get_element('H'),
@@ -989,6 +1007,28 @@ class Fragment(Graph):
                 mass += vertex.element.mass
         return mass
 
+    def count_internal_rotors(self):
+        """
+        Determine the number of internal rotors in the structure. Any single
+        bond not in a cycle and between two atoms that also have other bonds
+        is considered to be a pivot of an internal rotor.
+        """
+        count = 0
+        for atom1 in self.vertices:
+            for atom2, bond in atom1.edges.items():
+                if (self.vertices.index(atom1) < self.vertices.index(atom2) and
+                        bond.is_single() and not self.is_bond_in_cycle(bond)):
+                    if len(atom1.edges) > 1 and len(atom2.edges) > 1:
+                        count += 1
+        return count
+
+    def is_bond_in_cycle(self, bond):
+        """
+        Return :data:``True`` if the bond between atoms ``atom1`` and ``atom2``
+        is in one or more cycles in the graph, or :data:``False`` if not.
+        """
+        return self.is_edge_in_cycle(bond)
+
     def calculate_cp0(self):
         """
         Return the value of the heat capacity at zero temperature in J/mol*K.
@@ -1064,7 +1104,7 @@ class Fragment(Graph):
         Iterate through the atoms in the structure, checking their atom types
         to ensure they are correct (i.e. accurately describe their local bond
         environment) and complete (i.e. are as detailed as possible).
-
+        
         If `raise_exception` is `False`, then the generic atomType 'R' will
         be prescribed to any atom when get_atomtype fails. Currently used for
         resonance hybrid atom types.
@@ -1090,7 +1130,7 @@ class Fragment(Graph):
         """
         # Assume this is always true
         # There are cases where 2 radicalElectrons is a singlet, but
-        # the triplet is often more stable,
+        # the triplet is often more stable, 
         self.multiplicity = self.get_radical_count() + 1
 
 
@@ -1113,17 +1153,17 @@ class Fragment(Graph):
         """
         Return the molecular formula for the fragment.
         """
-
+        
         # Count the number of each element in the molecule
         elements = {}
         cuttinglabels = {}
         for atom in self.vertices:
             symbol = atom.symbol
             elements[symbol] = elements.get(symbol, 0) + 1
-
+        
         # Use the Hill system to generate the formula
         formula = ''
-
+        
         # Carbon and hydrogen always come first if carbon is present
         if 'C' in elements.keys():
             count = elements['C']
@@ -1140,7 +1180,7 @@ class Fragment(Graph):
         for key in keys:
             count = elements[key]
             formula += '{0}{1:d}'.format(key, count) if count > 1 else key
-
+        
         return formula
 
     def get_representative_molecule(self, mode='minimal', update=True):
@@ -1157,14 +1197,14 @@ class Fragment(Graph):
                 if isinstance(mapped_vertex, CuttingLabel):
 
                     # replace cutting label with atom H
-                    atom_H = Atom(element=get_element('H'),
-                                radical_electrons=0,
-                                charge=0,
+                    atom_H = Atom(element=get_element('H'), 
+                                radical_electrons=0, 
+                                charge=0, 
                                 lone_pairs=0)
 
                     for bondedAtom, bond in mapped_vertex.edges.items():
                         new_bond = Bond(bondedAtom, atom_H, order=bond.order)
-
+                        
                         bondedAtom.edges[atom_H] = new_bond
                         del bondedAtom.edges[mapped_vertex]
 
@@ -1176,7 +1216,7 @@ class Fragment(Graph):
                 else:
                     atoms.append(mapped_vertex)
 
-            # Note: mapping is a dict with
+            # Note: mapping is a dict with 
             # key: self.vertex and value: mol_repr.atom
             mol_repr = Molecule()
             mol_repr.atoms = atoms
@@ -1185,7 +1225,7 @@ class Fragment(Graph):
 
             return mol_repr, mapping
 
-    def to_rdkit_mol(self, remove_h=False, return_mapping=True):
+    def to_rdkit_mol(self, remove_h=False, return_mapping=True, save_order=False):
         """
         Convert a molecular structure to a RDKit rdmol object.
         """
@@ -1197,9 +1237,11 @@ class Fragment(Graph):
 
         mol0, mapping = self.get_representative_molecule('minimal', update=False)
 
-        rdmol, rdAtomIdx_mol0 = converter.to_rdkit_mol(mol0, remove_h=remove_h,
-                                                     return_mapping=return_mapping,
-                                                     sanitize=True)
+        rdmol, rdAtomIdx_mol0 = converter.to_rdkit_mol(mol0,
+                                                       remove_h=remove_h,
+                                                       return_mapping=return_mapping,
+                                                       sanitize=True,
+                                                       save_order=save_order)
 
         rdAtomIdx_frag = {}
         for frag_atom, mol0_atom in mapping.items():
@@ -1225,19 +1267,19 @@ class Fragment(Graph):
 
         return rdmol, rdAtomIdx_frag
 
-    def to_adjacency_list(self,
-                        label='',
-                        remove_h=False,
+    def to_adjacency_list(self, 
+                        label='', 
+                        remove_h=False, 
                         remove_lone_pairs=False,
                         old_style=False):
         """
         Convert the molecular structure to a string adjacency list.
         """
         from molecule.molecule.adjlist import to_adjacency_list
-        result = to_adjacency_list(self.vertices,
-                                 self.multiplicity,
-                                 label=label,
-                                 group=False,
+        result = to_adjacency_list(self.vertices, 
+                                 self.multiplicity,  
+                                 label=label, 
+                                 group=False, 
                                  remove_h=remove_h,
                                  remove_lone_pairs=remove_lone_pairs,
                                  old_style=old_style)
@@ -1252,11 +1294,11 @@ class Fragment(Graph):
         """
         from molecule.molecule.adjlist import from_adjacency_list
         
-        self.vertices, self.multiplicity = from_adjacency_list(adjlist, group=False, saturate_h=saturate_h)
+        self.vertices, self.multiplicity, self.site, self.morphology = from_adjacency_list(adjlist, group=False, saturate_h=saturate_h)
         self.update_atomtypes(raise_exception=raise_atomtype_exception)
-
+        
         # Check if multiplicity is possible
-        n_rad = self.get_radical_count()
+        n_rad = self.get_radical_count() 
         multiplicity = self.multiplicity
         if not (n_rad + 1 == multiplicity or n_rad - 1 == multiplicity or
                 n_rad - 3 == multiplicity or n_rad - 5 == multiplicity):
@@ -1268,7 +1310,7 @@ class Fragment(Graph):
                                  'Currently, AFM does not support ion chemistry.\n {0}'.format(adjlist))
         return self
 
-    def get_aromatic_rings(self, rings=None):
+    def get_aromatic_rings(self, rings=None, save_order=False):
         """
         Returns all aromatic rings as a list of atoms and a list of bonds.
 
@@ -1290,7 +1332,7 @@ class Fragment(Graph):
             return [], []
 
         try:
-            rdkitmol, rdAtomIndices = self.to_rdkit_mol(remove_h=False, return_mapping=True)
+            rdkitmol, rdAtomIndices = self.to_rdkit_mol(remove_h=False, return_mapping=True, save_order=save_order)
         except ValueError:
             logging.warning('Unable to check aromaticity by converting to RDKit Mol.')
         else:
@@ -1316,10 +1358,10 @@ class Fragment(Graph):
             return aromatic_rings, aromatic_bonds
 
     def is_aromatic(self):
+        """ 
+        Returns ``True`` if the fragment is aromatic, or ``False`` if not.  
         """
-        Returns ``True`` if the fragment is aromatic, or ``False`` if not.
-        """
-        mol0, _ = self.get_representative_molecule('minimal')
+        mol0, _ = self.get_representative_molecule('minimal')   
         return mol0.is_aromatic()
 
     def atom_ids_valid(self):
@@ -1429,7 +1471,7 @@ class Fragment(Graph):
         mol_repr.update()
         smiles_after = mol_repr.to_smiles()
         import re
-        smiles = re.sub('\[Si-3\]', '', smiles_after)
+        smiles = re.sub(r'\[Si-3\]', '', smiles_after)
 
         return smiles
 
@@ -1501,13 +1543,13 @@ class Fragment(Graph):
         else:
             # didn't fail
             return True
-
+        
         # not returned yet? must be nonlinear
         return False
 
     def saturate_radicals(self):
         """
-        Saturate the fragment by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.
+        Saturate the fragment by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.  
         """
         added = {}
         for atom in self.vertices:
@@ -1520,7 +1562,7 @@ class Fragment(Graph):
                     added[atom] = []
                 added[atom].append([H, bond])
                 atom.decrement_radical()
-
+      
         # Update the atom types of the saturated structure (not sure why
         # this is necessary, because saturating with H shouldn't be
         # changing atom types, but it doesn't hurt anything and is not
@@ -1531,13 +1573,16 @@ class Fragment(Graph):
 
         return added
 
-    def is_aryl_radical(self, aromatic_rings=None):
+    def is_aryl_radical(self, aromatic_rings=None, save_order=False):
         """
-        Return ``True`` if the fragment only contains aryl radicals,
-        ie. radical on an aromatic ring, or ``False`` otherwise.
+        Return ``True`` if the molecule only contains aryl radicals,
+        i.e., radical on an aromatic ring, or ``False`` otherwise.
+        If no ``aromatic_rings`` provided, aromatic rings will be searched in-place,
+        and this process may involve atom order change by default. Set ``save_order`` to
+        ``True`` to force the atom order unchanged.
         """
         if aromatic_rings is None:
-            aromatic_rings = self.get_aromatic_rings()[0]
+            aromatic_rings = self.get_aromatic_rings(save_order=save_order)[0]
 
         total = self.get_radical_count()
         aromatic_atoms = set([atom for atom in itertools.chain.from_iterable(aromatic_rings)])
@@ -2004,6 +2049,6 @@ class Fragment(Graph):
                 return True
         return False
 
-# this variable is used to name atom IDs so that there are as few conflicts by
+# this variable is used to name atom IDs so that there are as few conflicts by 
 # using the entire space of integer objects
 atom_id_counter = -2**15

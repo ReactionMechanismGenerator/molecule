@@ -1420,7 +1420,7 @@ multiplicity 2
 
     def test_is_in_cycle_ethane(self):
         """
-        Test the Molecule.isInCycle() method with ethane.
+        Test the Molecule is_atom_in_cycle() and is_bond_in_cycle() methods with ethane.
         """
         molecule = Molecule().from_smiles('CC')
         for atom in molecule.atoms:
@@ -1431,7 +1431,7 @@ multiplicity 2
 
     def test_is_in_cycle_cyclohexane(self):
         """
-        Test the Molecule.isInCycle() method with ethane.
+        Test the Molecule is_atom_in_cycle() and is_bond_in_cycle() methods with cyclohexane.
         """
         molecule = Molecule().from_inchi('InChI=1/C6H12/c1-2-4-6-5-3-1/h1-6H2')
         for atom in molecule.atoms:
@@ -1547,7 +1547,7 @@ multiplicity 2
     def test_kekule_to_smiles(self):
         """
         Test that we can print SMILES strings of Kekulized structures
-
+        
         The first two are different Kekule forms of the same thing.
         """
         test_cases = {
@@ -1838,7 +1838,7 @@ multiplicity 2
     def test_molecule_props_object_attribute(self):
         """
         Test that Molecule's props dictionaries are independent of each other.
-
+        
         Create a test in which is checked whether props is an object attribute rather
         than a class attribute
         """
@@ -1854,7 +1854,7 @@ multiplicity 2
     def test_count_internal_rotors_dimethyl_acetylene(self):
         """
         Test the Molecule.count_internal_rotors() method for dimethylacetylene.
-
+        
         This is a "hard" test that currently fails.
         """
         self.assertEqual(Molecule().from_smiles('CC#CC').count_internal_rotors(), 1)
@@ -2238,7 +2238,7 @@ multiplicity 2
 
     def test_get_deterministic_smallest_set_of_smallest_rings_case1(self):
         """
-        Test fused tricyclic can be decomposed into single rings more
+        Test fused tricyclic can be decomposed into single rings more 
         deterministically
         """
         smiles = 'C1C2C3C=CCCC2C13'
@@ -2268,7 +2268,7 @@ multiplicity 2
     def test_get_deterministic_smallest_set_of_smallest_rings_case2(self):
         """
         Test if two possible smallest rings can join the smallest set
-        the method can pick one of them deterministically using sum of
+        the method can pick one of them deterministically using sum of 
         atomic numbers along the rings.
         In this test case and with currect method setup, ring (CCSCCCCC)
         will be picked rather than ring(CCCOCC).
@@ -2300,7 +2300,7 @@ multiplicity 2
         Test if two possible smallest rings can join the smallest set
         the method can pick one of them deterministically when their
         sum of atomic numbers along the rings are also equal to each other.
-
+        
         To break the tie, one option we have is to consider adding contributions
         from other parts of the molecule, such as atomic number weighted connectivity
         value and differentiate bond orders when calculating connectivity values.
@@ -2500,6 +2500,30 @@ multiplicity 2
         aromatic_atoms, aromatic_bonds = mol.get_aromatic_rings()
         self.assertEqual(len(aromatic_atoms), 0)
         self.assertEqual(len(aromatic_bonds), 0)
+
+    def test_aromaticity_perception_save_order(self):
+        """Test aromaticity perception via get_aromatic_rings for phenyl radical without changing atom order."""
+        mol = Molecule().from_adjacency_list("""multiplicity 2
+1  C u0 p0 c0 {2,S} {3,S} {7,D}
+2  O u1 p2 c0 {1,S}
+3  C u0 p0 c0 {1,S} {4,D} {8,S}
+4  C u0 p0 c0 {3,D} {5,S} {9,S}
+5  C u0 p0 c0 {4,S} {6,D} {10,S}
+6  C u0 p0 c0 {5,D} {7,S} {11,S}
+7  C u0 p0 c0 {1,D} {6,S} {12,S}
+8  H u0 p0 c0 {3,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {5,S}
+11 H u0 p0 c0 {6,S}
+12 H u0 p0 c0 {7,S}
+"""
+        )
+        aromatic_atoms, aromatic_bonds = mol.get_aromatic_rings(save_order=True)
+        self.assertEqual(len(aromatic_atoms), 1)
+        self.assertEqual(len(aromatic_bonds), 1)
+        # A quick check for non-changed atom order is to check
+        # if the first atom becomes the oxygen atom after calling `get_aromatic_rings`
+        self.assertFalse(mol.atoms[0].is_oxygen())
 
     def test_aryl_radical_true(self):
         """Test aryl radical perception for phenyl radical."""

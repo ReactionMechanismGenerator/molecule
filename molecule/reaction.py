@@ -30,8 +30,8 @@
 """
 This module contains classes and functions for working with chemical reactions.
 
-From the `IUPAC Compendium of Chemical Terminology
-<https://doi.org/10.1351/goldbook>`_, a chemical reaction is "a process that
+From the `IUPAC Compendium of Chemical Terminology 
+<https://doi.org/10.1351/goldbook>`_, a chemical reaction is "a process that 
 results in the interconversion of chemical species".
 
 In RMG Py, a chemical reaction is represented in memory as a :class:`Reaction`
@@ -68,7 +68,7 @@ from molecule.species import Species
 class Reaction:
     """
     A chemical reaction. The attributes are:
-
+    
     =================== =========================== ============================
     Attribute           Type                        Description
     =================== =========================== ============================
@@ -92,7 +92,7 @@ class Reaction:
     `is_forward`        ``bool``                    Indicates if the reaction was generated in the forward (true) or reverse (false)
     `rank`              ``int``                     Integer indicating the accuracy of the kinetics for this reaction
     =================== =========================== ============================
-
+    
     """
 
     def __init__(self,
@@ -169,7 +169,7 @@ class Reaction:
 
     def to_labeled_str(self, use_index=False):
         """
-        the same as __str__ except that the labels are assumed to exist and used for reactant and products rather than
+        the same as __str__ except that the labels are assumed to exist and used for reactant and products rather than 
         the labels plus the index in parentheses
         """
         arrow = ' <=> ' if self.reversible else ' => '
@@ -234,7 +234,7 @@ class Reaction:
     def to_chemkin(self, species_list=None, kinetics=True):
         """
         Return the chemkin-formatted string for this reaction.
-
+        
         If `kinetics` is set to True, the chemkin format kinetics will also
         be returned (requires the `species_list` to figure out third body colliders.)
         Otherwise, only the reaction string will be returned.
@@ -662,7 +662,7 @@ class Reaction:
         Return the overall rate coefficient for the forward reaction at
         temperature `T` in K and pressure `P` in Pa, including any reaction
         path degeneracies.
-
+        
         If diffusion_limiter is enabled, the reaction is in the liquid phase and we use
         a diffusion limitation to correct the rate. If not, then use the intrinsic rate
         coefficient.
@@ -672,7 +672,7 @@ class Reaction:
         """
         if isinstance(self.kinetics, StickingCoefficient):
             if surface_site_density <= 0:
-                raise ValueError("Please provide a postive surface site density in mol/m^2 "
+                raise ValueError("Please provide a postive surface site density in mol/m^2 " 
                                 f"for calculating the rate coefficient of {StickingCoefficient.__name__} kinetics")
             else:
                 return self.get_surface_rate_coefficient(T, surface_site_density)
@@ -757,7 +757,7 @@ class Reaction:
         """
         Turns the kinetics into Arrhenius (if they were ArrheniusEP)
         and ensures the activation energy is at least the endothermicity
-        for endothermic reactions, and is not negative only as a result
+        for endothermic reactions, and is not negative only as a result 
         of using Evans Polanyi with an exothermic reaction.
         If `force_positive` is True, then all reactions
         are forced to have a non-negative barrier.
@@ -1141,7 +1141,7 @@ class Reaction:
         Generate the reactant-product pairs to use for this reaction when
         performing flux analysis. The exact procedure for doing so depends on
         the reaction type:
-
+        
         =================== =============== ========================================
         Reaction type       Template        Resulting pairs
         =================== =============== ========================================
@@ -1150,8 +1150,8 @@ class Reaction:
         Association         A + B -> C      (A,C), (B,C)
         Bimolecular         A + B -> C + D  (A,C), (B,D) *or* (A,D), (B,C)
         =================== =============== ========================================
-
-        There are a number of ways of determining the correct pairing for
+        
+        There are a number of ways of determining the correct pairing for 
         bimolecular reactions. Here we try a simple similarity analysis by comparing
         the number of heavy atoms. This should work most of the time, but a more
         rigorous algorithm may be needed for some cases.
@@ -1214,9 +1214,9 @@ class Reaction:
     # Build the transition state geometry
     def generate_3d_ts(self, reactants, products):
         """
-        Generate the 3D structure of the transition state. Called from
+        Generate the 3D structure of the transition state. Called from 
         model.generate_kinetics().
-
+        
         self.reactants is a list of reactants
         self.products is a list of products
         """
@@ -1226,7 +1226,7 @@ class Reaction:
         atoms involved in the reaction. If a radical is involved, can find the atom
         with radical electrons. If a more reliable method can be found, would greatly
         improve the method.
-
+        
         Repeat for the products
         """
         for i in range(0, len(reactants)):

@@ -37,10 +37,10 @@ from molecule.quantity import Quantity
 
 cdef class RateUncertainty(object):
     """
-    Class for storing kinetic uncertainty information describes identically a normal distribution
-    on Log(k) and a lognormal distribution on k by mu and var at a single temperature Tref also
+    Class for storing kinetic uncertainty information describes identically a normal distribution 
+    on Log(k) and a lognormal distribution on k by mu and var at a single temperature Tref also 
     includes potentially useful uncertainty treatment variables
-    N = number of samples used to generate the distribution
+    N = number of samples used to generate the distribution 
     data_mean is the mean of the data points fit to the uncertainty
     correlation = label identifying source of estimate for correlated error treatment
     Note that correlated errors are expected to be associated only with mu (the bias of the distribution)

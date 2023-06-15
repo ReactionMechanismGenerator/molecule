@@ -39,39 +39,39 @@ cpdef int get_reaction_order_from_rate_coefficient_units(kunits) except -1
 ################################################################################
 
 cdef class KineticsModel:
-
+    
     cdef public ScalarQuantity _Tmin, _Tmax
     cdef public ScalarQuantity _Pmin, _Pmax
     cdef public RateUncertainty uncertainty
 
     cdef public str comment
-
+    
     cpdef bint is_pressure_dependent(self) except -2
-
+    
     cpdef bint is_temperature_valid(self, double T) except -2
 
     cpdef double get_rate_coefficient(self, double T, double P=?) except -1
-
+    
     cpdef to_html(self)
 
     cpdef bint is_similar_to(self, KineticsModel other_kinetics) except -2
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2
-
+    
     cpdef double discrepancy(self, KineticsModel other_kinetics) except -2
-
+    
 
 cdef class PDepKineticsModel(KineticsModel):
-
+    
     cdef public dict efficiencies
     cdef public KineticsModel highPlimit
-
+    
     cpdef bint is_pressure_dependent(self) except -2
-
+    
     cpdef bint is_pressure_valid(self, double P) except -2
 
     cpdef double get_effective_pressure(self, double P, list species, np.ndarray fractions) except -1
-
+    
     cpdef np.ndarray get_effective_collider_efficiencies(self, list species)
 
     cpdef double get_rate_coefficient(self, double T, double P=?) except -1

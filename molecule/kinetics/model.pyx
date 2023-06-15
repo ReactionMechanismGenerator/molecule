@@ -43,7 +43,7 @@ from molecule.molecule import Molecule
 
 cpdef str get_rate_coefficient_units_from_reaction_order(n_gas, n_surf=0):
     """
-    Given a reaction `order` with `n_gas` and `n_surf` species,
+    Given a reaction `order` with `n_gas` and `n_surf` species, 
     return the corresponding SI units of the rate
     coefficient. These are the units that rate coefficients are stored in
     internally, as well as the units of the rate coefficient obtained using
@@ -63,25 +63,25 @@ cpdef str get_rate_coefficient_units_from_reaction_order(n_gas, n_surf=0):
         elif n_gas == 1: kunits = 'm^3/(mol*s)'
         elif n_gas == 2: kunits = 'm^6/(mol^2*s)'
         elif n_gas == 3: kunits = 'm^9/(mol^3*s)'
-    elif n_surf == 2: # Area Units
+    elif n_surf == 2: # Area Units 
         if n_gas == 0: kunits = 'm^2/(mol*s)'
         elif n_gas == 1: kunits = 'm^5/(mol^2*s)'
         elif n_gas == 2: kunits = 'm^8/(mol^3*s)'
         elif n_gas == 3: kunits = 'm^11/(mol^4*s)'
-    elif n_surf == 3: # Area Units
-        if n_gas == 0: kunits = 'm^4/(mol^2*s)'
+    elif n_surf == 3: # Area Units 
+        if n_gas == 0: kunits = 'm^4/(mol^2*s)' 
         elif n_gas == 1: kunits = 'm^7/(mol^3*s)'
         elif n_gas == 2: kunits = 'm^10/(mol^4*s)'
         elif n_gas == 3: kunits = 'm^13/(mol^5*s)'
     else:
         raise ValueError('Invalid reaction order of {0} gas {1} surface species.'.format(n_gas,n_surf))
-
+    
     return kunits
 
 cpdef int get_reaction_order_from_rate_coefficient_units(kunits) except -1:
     """
     Given a set of rate coefficient units `kunits`, return the corresponding
-    reaction order. Raises a :class:`ValueError` if the reaction order could
+    reaction order. Raises a :class:`ValueError` if the reaction order could 
     not be determined.
     """
     import quantities as pq
@@ -109,7 +109,7 @@ cdef class KineticsModel:
     """
     A base class for chemical kinetics models, containing several attributes
     common to all models:
-
+    
     =============== ============================================================
     Attribute       Description
     =============== ============================================================
@@ -183,7 +183,7 @@ cdef class KineticsModel:
         """
         Return ``True`` if the temperature `T` in K is within the valid
         temperature range of the kinetic data, or ``False`` if not. If
-        the minimum and maximum temperature are not defined, ``True`` is
+        the minimum and maximum temperature are not defined, ``True`` is 
         returned.
         """
         return (self.Tmin is None or self._Tmin.value_si <= T) and (self.Tmax is None or T <= self._Tmax.value_si)
@@ -289,7 +289,7 @@ cdef class PDepKineticsModel(KineticsModel):
     """
     A base class for chemical kinetics models that depend on both temperature
     and pressure, containing several attributes common to all such models:
-
+    
     =============== ============================================================
     Attribute       Description
     =============== ============================================================
@@ -348,7 +348,7 @@ cdef class PDepKineticsModel(KineticsModel):
         """
         Return ``True`` if the pressure `P` in Pa is within the valid
         pressure range of the kinetic data, or ``False`` if not. If
-        the minimum and maximum pressure are not defined, ``True`` is
+        the minimum and maximum pressure are not defined, ``True`` is 
         returned.
         """
         return (self.Pmin is None or self._Pmin.value_si <= P) and (self.Pmax is None or P <= self._Pmax.value_si)
@@ -357,7 +357,7 @@ cdef class PDepKineticsModel(KineticsModel):
         """
         Return the effective pressure in Pa for a system at a given pressure
         `P` in Pa composed of the given list of `species` (Species or Molecule objects) with the given
-        `fractions`.
+        `fractions`.  
         """
         cdef np.ndarray[np.float64_t, ndim=1] _fractions
         cdef double Peff, frac, eff, total_frac, eff_frac
@@ -367,7 +367,7 @@ cdef class PDepKineticsModel(KineticsModel):
 
         _fractions = fractions
 
-        # We probably have fewer efficiencies than we do fractions, so
+        # We probably have fewer efficiencies than we do fractions, so 
         # iterating over the species with efficiencies is faster
         Peff = 0.0
         eff_frac = 0.0
@@ -383,7 +383,7 @@ cdef class PDepKineticsModel(KineticsModel):
             # If species not in list of fractions, assume fraction of zero
             # and skip to the next species
 
-        # For the species with no efficiency data, assume an efficiency of
+        # For the species with no efficiency data, assume an efficiency of 
         # unity and add to the calculation of the effective pressure
         total_frac = np.sum(_fractions)
         Peff += (total_frac - eff_frac) * 1.0
@@ -534,7 +534,7 @@ cdef class TunnelingModel:
     """
     A base class for models of quantum mechanical tunneling through a reaction
     barrier. The attributes are:
-
+    
     =============== ============================================================
     Attribute       Description
     =============== ============================================================

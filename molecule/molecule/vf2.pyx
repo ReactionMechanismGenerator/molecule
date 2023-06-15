@@ -75,7 +75,7 @@ cdef class VF2:
                                 bint strict=True):
         """
         Return a list of dicts of all valid isomorphism mappings from graph
-        `graph1` to graph `graph2` with the optional initial mapping
+        `graph1` to graph `graph2` with the optional initial mapping 
         `initial_mapping`. If no valid isomorphisms are found, an empty list is
         returned.
         """
@@ -95,7 +95,7 @@ cdef class VF2:
     cpdef list find_subgraph_isomorphisms(self, Graph graph1, Graph graph2, dict initial_mapping, bint save_order=False):
         """
         Return a list of dicts of all valid subgraph isomorphism mappings from
-        graph `graph1` to subgraph `graph2` with the optional initial mapping
+        graph `graph1` to subgraph `graph2` with the optional initial mapping 
         `initial_mapping`. If no valid subgraph isomorphisms are found, an empty
         list is returned.
         """
@@ -364,7 +364,7 @@ cdef class VF2:
         """
         Add as valid a mapping of vertex `vertex1` from the first graph to
         vertex `vertex2` from the second graph, and update the terminals
-        status accordingly.
+        status accordingly.        
         """
         cdef Vertex v
 
@@ -386,7 +386,7 @@ cdef class VF2:
         """
         Remove as valid a mapping of vertex `vertex1` from the first graph to
         vertex `vertex2` from the second graph, and update the terminals
-        status accordingly.
+        status accordingly.        
         """
         cdef Vertex v, v2
 

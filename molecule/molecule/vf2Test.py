@@ -68,7 +68,7 @@ class TestVF2(unittest.TestCase):
     def test_feasible(self):
         """
         Test that feasibility returns correct values on highly functional molecule
-
+        
         `feasible` method isn't perfect in assigning values but it should do a good
         job on highly functional values
         """

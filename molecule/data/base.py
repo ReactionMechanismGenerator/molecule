@@ -328,7 +328,7 @@ class Database(object):
 
     def save_dictionary(self, path):
         """
-        Extract species from all entries associated with a kinetics library or depository and save them
+        Extract species from all entries associated with a kinetics library or depository and save them 
         to the path given.
         """
         try:
@@ -354,16 +354,16 @@ class Database(object):
 
     def save(self, path, reindex=True):
         """
-        Save the current database to the file at location `path` on disk.
+        Save the current database to the file at location `path` on disk. 
         """
         try:
             os.makedirs(os.path.dirname(path))
         except OSError:
             pass
-
+        
         if reindex:
             entries = self.get_entries_to_save()
-        else:
+        else: 
             entries = self.entries.values()
 
         f = codecs.open(path, 'w', 'utf-8')
@@ -475,7 +475,7 @@ class Database(object):
                 record = self.entries[label].item
                 lines = record.splitlines()
                 # If record is a logical node, make it into one.
-                if re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", lines[1]):
+                if re.match(r"(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", lines[1]):
                     self.entries[label].item = make_logic_node(' '.join(lines[1:]))
                 # Otherwise convert adjacency list to molecule or pattern
                 elif pattern:
@@ -497,7 +497,7 @@ class Database(object):
             raise DatabaseError("Load the dictionary before you load the tree.")
 
         # should match '  L3 : foo_bar '  and 'L3:foo_bar'
-        parser = re.compile('^\s*L(?P<level>\d+)\s*:\s*(?P<label>\S+)')
+        parser = re.compile(r'^\s*L(?P<level>\d+)\s*:\s*(?P<label>\S+)')
 
         parents = [None]
         for line in tree.splitlines():
@@ -896,7 +896,7 @@ class Database(object):
         return descendants
 
     def match_node_to_node(self, node, node_other):
-        """
+        """ 
         Return `True` if `node` and `node_other` are identical.  Otherwise, return `False`.
         Both `node` and `node_other` must be Entry types with items containing Group or LogicNode types.
         """
@@ -910,7 +910,7 @@ class Database(object):
             return False
 
     def match_node_to_child(self, parent_node, child_node):
-        """
+        """ 
         Return `True` if `parent_node` is a parent of `child_node`.  Otherwise, return `False`.
         Both `parent_node` and `child_node` must be Entry types with items containing Group or LogicNode types.
         If `parent_node` and `child_node` are identical, the function will also return `False`.
@@ -950,10 +950,10 @@ class Database(object):
         include extra labels, and so we only require that every labeled atom in
         the functional group represented by `node` has an equivalent labeled
         atom in `structure`.
-
-        Matching to structure is more strict than to node.  All labels in structure must
+        
+        Matching to structure is more strict than to node.  All labels in structure must 
         be found in node.  However the reverse is not true, unless `strict` is set to True.
-
+        
         =================== ========================================================
         Attribute           Description
         =================== ========================================================
@@ -1031,7 +1031,7 @@ class Database(object):
         If root=None then uses the first matching top node.
 
         Returns None if there is no matching root.
-
+        
         Set strict to ``True`` if all labels in final matched node must match that of the
         structure.  This is used in kinetics groups to find the correct reaction template, but
         not generally used in other GAVs due to species generally not being prelabeled.
@@ -1120,7 +1120,7 @@ class LogicNode(object):
     def __init__(self, items, invert):
         self.components = []
         for item in items:
-            if re.match("(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", item):
+            if re.match(r"(?i)\s*(NOT\s)?\s*(OR|AND|UNION)\s*(\{.*\})", item):
                 component = make_logic_node(item)
             else:
                 component = item
@@ -1147,7 +1147,7 @@ class LogicOr(LogicNode):
     def match_to_structure(self, database, structure, atoms, strict=False):
         """
         Does this node in the given database match the given structure with the labeled atoms?
-
+        
         Setting `strict` to True makes enforces matching of atomLabels in the structure to every
         atomLabel in the node.
         """
@@ -1198,7 +1198,7 @@ class LogicAnd(LogicNode):
     def match_to_structure(self, database, structure, atoms, strict=False):
         """
         Does this node in the given database match the given structure with the labeled atoms?
-
+        
         Setting `strict` to True makes enforces matching of atomLabels in the structure to every
         atomLabel in the node.
         """
@@ -1287,7 +1287,7 @@ def remove_comment_from_line(line):
 def split_line_and_comment(line):
     """
     Returns a tuple(line, comment) based on a '//' comment delimiter.
-
+    
     Either `line` or `comment` may be ''.
     Does not strip whitespace, nor remove more than two slashes.
     """
@@ -1372,7 +1372,7 @@ class ForbiddenStructures(Database):
                    metal=None, facet=None, site=None):
         """
         Load an entry from the forbidden structures database. This method is
-        automatically called during loading of the forbidden structures
+        automatically called during loading of the forbidden structures 
         database.
         """
         from molecule.species import Species
@@ -1406,7 +1406,7 @@ class ForbiddenStructures(Database):
     def save_entry(self, f, entry, name='entry'):
         """
         Save an `entry` from the forbidden structures database. This method is
-        automatically called during saving of the forbidden structures
+        automatically called during saving of the forbidden structures 
         database.
         """
 

@@ -98,7 +98,7 @@ class MetalLibrary(Database):
                 binding_energies[element] = molecule.quantity.Energy(energy)
         else:
             binding_energies = None
-
+        
         if surfaceSiteDensity:
             surface_site_density = molecule.quantity.SurfaceConcentration(*surfaceSiteDensity)
         else:
@@ -207,7 +207,7 @@ class MetalDatabase(object):
         """
         Load the metal database from the given `path` on disk, where `path`
         points to the top-level folder of the surface database.
-
+        
         Load the metal library
         """
         self.libraries['surface'].load(os.path.join(path, 'libraries', 'metal.py'))
@@ -240,7 +240,7 @@ class MetalDatabase(object):
             raise DatabaseError("Cannot search for nothing.")
         assert isinstance(metal, str)
 
-        facet = re.search('\d+', metal)
+        facet = re.search(r'\d+', metal)
 
         if facet is not None:
             try:

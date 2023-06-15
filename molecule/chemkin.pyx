@@ -72,7 +72,7 @@ def read_thermo_entry(entry, Tmin=0, Tint=0, Tmax=0):
     Read a thermodynamics `entry` for one species in a Chemkin file. Returns
     the label of the species and the thermodynamics model as a :class:`NASA`
     object.
-
+    
     Format specification at http://www2.galcit.caltech.edu/EDL/public/formats/chemkin.html
     """
     lines = entry.splitlines()
@@ -875,7 +875,7 @@ def load_species_dictionary(path, generate_resonance_structures=True):
 def remove_comment_from_line(line):
     """
     Remove a comment from a line of a Chemkin file or species dictionary file.
-
+    
     Returns the line and the comment.
     If the comment is encoded with latin-1, it is converted to utf-8.
     """
@@ -896,10 +896,12 @@ def remove_comment_from_line(line):
     return line, comment
 
 
-def load_transport_file(path, species_dict):
+def load_transport_file(path, species_dict, skip_missing_species=False):
     """
     Load a Chemkin transport properties file located at `path` and store the
     properties on the species in `species_dict`.
+    If skip_missing_species=True then species not defined in the species_dict 
+    are just skipped over, with a warning.
     """
     with open(path, 'r') as f:
         for line0 in f:
@@ -909,6 +911,10 @@ def load_transport_file(path, species_dict):
                 # This line contains an entry, so parse it
                 label = line[0:16].strip()
                 data = line[16:].split()
+                if skip_missing_species:
+                    if label not in species_dict:
+                        logging.warning(f"Skipping transport data for unknown species {label}")
+                        continue
                 species = species_dict[label]
                 species.transport_data = TransportData(
                     shapeIndex=int(data[0]),
@@ -953,7 +959,7 @@ def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comm
                 # Unread the line (we'll re-read it in readReactionBlock())
                 f.seek(previous_line)
                 read_species_block(f, species_dict, species_aliases, species_list)
-
+            
             elif 'SITE' in line.upper():
                 # Unread the line (we'll re-read it in readReactionBlock())
                 f.seek(previous_line)
@@ -974,7 +980,7 @@ def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comm
             previous_line = f.tell()
             line0 = f.readline()
 
-    # Read in the thermo data from the thermo file
+    # Read in the thermo data from the thermo file        
     if thermo_path:
         with open(thermo_path, 'r') as f:
             line0 = f.readline()
@@ -999,7 +1005,7 @@ def load_chemkin_file(path, dictionary_path=None, transport_path=None, read_comm
     # If the transport path is given, then read it to obtain the transport
     # properties
     if transport_path:
-        load_transport_file(transport_path, species_dict)
+        load_transport_file(transport_path, species_dict, skip_missing_species=True)
 
     if not use_chemkin_names:
         # Apply species aliases if known
@@ -1108,7 +1114,7 @@ cpdef _process_duplicate_reactions(list reaction_list):
 def read_species_block(f, species_dict, species_aliases, species_list):
     """
     Read a Species block from a chemkin file.
-
+    
     f is a file-like object that is just before the 'SPECIES' statement. When finished, it will have just passed the 'END' statement.
     species_dict is a dictionary of species that will be updated.
     species_aliases is a dictionary of species aliases that will be updated.
@@ -1126,7 +1132,7 @@ def read_species_block(f, species_dict, species_aliases, species_list):
     while 'END' not in tokens_upper:
         line = f.readline()
         # If the line contains only one species, and also contains
-        # a comment with only one token, assume that token is
+        # a comment with only one token, assume that token is 
         # intended to be the true identifier for the species, but
         # was not used e.g. due to a length limitation
         if '!' in line and len(line.split('!')) == 2:
@@ -1170,14 +1176,14 @@ def read_species_block(f, species_dict, species_aliases, species_list):
 def read_thermo_block(f, species_dict):
     """
     Read a thermochemistry block from a chemkin file.
-
+    
     f is a file-like object that is just before the 'THERM' statement.
     When finished, it will have just passed the 'END' statement.
     species_dict is a dictionary of species that will be updated with the given thermodynamics.
-
+    
     Returns a dictionary of molecular formulae for each species, in the form
     `{'methane': {'C':1, 'H':4}}
-
+    
     If duplicate entries are found, the FIRST is used, and a warning is printed.
     """
     # List of thermodynamics (hopefully one per species!)
@@ -1227,7 +1233,7 @@ def read_thermo_block(f, species_dict):
         # check for extended elemental composition line
         if line.rstrip().endswith('1&'):
             # this thermo entry has extended elemental composition line
-            # read the elements line, append it to thermo_block, and continue
+            # read the elements line, append it to thermo_block, and continue 
             line = f.readline()
             thermo_block += line
             line = f.readline()
@@ -1279,7 +1285,7 @@ def read_thermo_block(f, species_dict):
 def read_reactions_block(f, species_dict, read_comments=True):
     """
     Read a reactions block from a Chemkin file stream.
-
+    
     This function can also read the ``reactions.txt`` and ``pdepreactions.txt``
     files from RMG-Java kinetics libraries, which have a similar syntax.
     """
@@ -2016,7 +2022,7 @@ def mark_duplicate_reactions(reactions):
     """
     For a given list of `reactions`, mark all of the duplicate reactions as
     understood by Chemkin.
-
+    
     This is pretty slow (quadratic in size of reactions list) so only call it if you're really worried
     you may have undetected duplicate reactions.
     """
@@ -2028,9 +2034,9 @@ def mark_duplicate_reactions(reactions):
 
 def save_species_dictionary(path, species, old_style=False):
     """
-    Save the given list of `species` as adjacency lists in a text file `path`
+    Save the given list of `species` as adjacency lists in a text file `path` 
     on disk.
-
+    
     If `old_style==True` then it saves it in the old RMG-Java syntax.
     """
     with open(path, 'w') as f:
@@ -2063,15 +2069,15 @@ def save_transport_file(path, species):
     r"""
     Save a Chemkin transport properties file to `path` on disk containing the
     transport properties of the given list of `species`.
-
+    
     The syntax is from the Chemkin TRANSPORT manual.
     The first 16 columns in each line of the database are reserved for the species name
-    (Presently CHEMKIN is programmed to allow no more than 16-character names.)
+    (Presently CHEMKIN is programmed to allow no more than 16-character names.) 
     Columns 17 through 80 are free-format, and they contain the molecular parameters for each species. They are, in order:
-
+    
     1. An index indicating whether the molecule has a monatomic, linear or nonlinear geometrical configuration.
-       If the index is 0, the molecule is a single atom.
-       If the index is 1 the molecule is linear, and
+       If the index is 0, the molecule is a single atom. 
+       If the index is 1 the molecule is linear, and 
        if it is 2, the molecule is nonlinear.
     2. The Lennard-Jones potential well depth  :math:`\epsilon / k_B` in Kelvins.
     3. The Lennard-Jones collision diameter :math:`\sigma` in Angstroms.
@@ -2269,11 +2275,11 @@ def save_java_kinetics_library(path, species, reactions):
     save_species_dictionary(os.path.join(path, 'species.txt'), species, old_style=True)
 
 
-def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, transport_path=None,
+def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, transport_path=None, 
                  save_edge_species=False):
     """
     Save a Chemkin file for the current model as well as any desired output
-    species and reactions to `path`. If `save_edge_species` is True, then
+    species and reactions to `path`. If `save_edge_species` is True, then 
     a chemkin file and dictionary file for the core AND edge species and reactions
     will be saved.  It also saves verbose versions of each file.
     """
@@ -2399,7 +2405,7 @@ def write_elements_section(f):
     """
     Write the ELEMENTS section of the chemkin file.  This file currently lists
     all elements and isotopes available in RMG. It may become useful in the future
-    to only include elements/isotopes present in the current RMG run.
+    to only include elements/isotopes present in the current RMG run. 
     """
 
     s = 'ELEMENTS\n'
@@ -2429,7 +2435,7 @@ class ChemkinWriter(object):
 
 
     A new instance of the class can be appended to a subject as follows:
-
+    
     rmg = ...
     listener = ChemkinWriter(outputDirectory)
     rmg.attach(listener)
@@ -2441,7 +2447,7 @@ class ChemkinWriter(object):
     from its subject:
 
     rmg.detach(listener)
-
+    
     """
     def __init__(self, output_directory=''):
         super(ChemkinWriter, self).__init__()

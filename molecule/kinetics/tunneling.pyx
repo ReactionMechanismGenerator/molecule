@@ -53,7 +53,7 @@ cdef class Wigner(TunnelingModel):
     =============== =============================================================
     `frequency`     The imaginary frequency of the transition state
     =============== =============================================================
-
+    
     """
 
     def __init__(self, frequency):
@@ -84,7 +84,7 @@ cdef class Wigner(TunnelingModel):
     cpdef np.ndarray calculate_tunneling_function(self, np.ndarray Elist):
         """
         Raises :class:`NotImplementedError`, as the Wigner tunneling model
-        does not have a well-defined energy-dependent tunneling function.
+        does not have a well-defined energy-dependent tunneling function. 
         """
         raise NotImplementedError('The Wigner tunneling correction does not have a well-defined k(E) function.')
 
@@ -102,9 +102,9 @@ cdef class Eckart(TunnelingModel):
     `E0_TS`         The ground-state energy of the transition state
     `E0_prod`       The ground-state energy of the products
     =============== =============================================================
-
+    
     If `E0_prod` is not given, it is assumed to be the same as the reactants;
-    this results in the so-called "symmetric" Eckart model. Providing
+    this results in the so-called "symmetric" Eckart model. Providing 
     `E0_prod`, and thereby using the "asymmetric" Eckart model, is the
     recommended approach.
     """

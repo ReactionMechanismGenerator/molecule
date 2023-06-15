@@ -46,7 +46,7 @@ cdef class Chebyshev(PDepKineticsModel):
     A model of a phenomenological rate coefficient :math:`k(T,P)` using a
     set of Chebyshev polynomials in temperature and pressure. The attributes
     are:
-
+    
     =============== ============================================================
     Attribute       Description
     =============== ============================================================
@@ -60,7 +60,7 @@ cdef class Chebyshev(PDepKineticsModel):
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
     `comment`       Information about the model (e.g. its source)
     =============== ============================================================
-
+    
     """
 
     def __init__(self, coeffs=None, kunits='', highPlimit=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
@@ -132,7 +132,7 @@ cdef class Chebyshev(PDepKineticsModel):
     cpdef double get_reduced_temperature(self, double T) except -1000:
         """
         Return the reduced temperature corresponding to the given temperature
-        `T` in K. This maps the inverse of the temperature onto the domain
+        `T` in K. This maps the inverse of the temperature onto the domain 
         [-1, 1] using the `Tmin` and `Tmax` attributes as the limits.
         """
         cdef double Tmin, Tmax
@@ -143,7 +143,7 @@ cdef class Chebyshev(PDepKineticsModel):
     cpdef double get_reduced_pressure(self, double P) except -1000:
         """
         Return the reduced pressure corresponding to the given pressure
-        `P` in Pa. This maps the logarithm of the pressure onto the domain
+        `P` in Pa. This maps the logarithm of the pressure onto the domain 
         [-1, 1] using the `Pmin` and `Pmax` attributes as the limits.
         """
         cdef double Pmin, Pmax
@@ -153,8 +153,8 @@ cdef class Chebyshev(PDepKineticsModel):
 
     cpdef double get_rate_coefficient(self, double T, double P=0) except -1:
         """
-        Return the rate coefficient in the appropriate combination of m^3,
-        mol, and s at temperature `T` in K and pressure `P` in Pa by
+        Return the rate coefficient in the appropriate combination of m^3, 
+        mol, and s at temperature `T` in K and pressure `P` in Pa by 
         evaluating the Chebyshev expression.
         """
         cdef np.ndarray[np.float64_t, ndim=2] coeffs
@@ -179,7 +179,7 @@ cdef class Chebyshev(PDepKineticsModel):
         """
         Fit a Chebyshev kinetic model to a set of rate coefficients `K`, which
         is a matrix corresponding to the temperatures `Tlist` in K and pressures
-        `Plist` in Pa. `degreeT` and `degreeP` are the degree of the
+        `Plist` in Pa. `degreeT` and `degreeP` are the degree of the 
         polynomials in temperature and pressure, while `Tmin`, `Tmax`, `Pmin`,
         and `Pmax` set the edges of the valid temperature and pressure ranges
         in K and bar, respectively.
@@ -255,7 +255,7 @@ cdef class Chebyshev(PDepKineticsModel):
         return True
 
     cpdef change_rate(self, double factor):
-        """
+        """ 
         Changes kinetics rates by a multiple ``factor``.
         """
         self.coeffs.value_si[0, 0] += log10(factor)
@@ -268,7 +268,7 @@ cdef class Chebyshev(PDepKineticsModel):
         """
         import cantera as ct
         import copy
-        assert isinstance(ct_reaction, ct.ChebyshevReaction), "Must be a Cantera ChebyshevReaction object"
+        assert isinstance(ct_reaction.rate, ct.ChebyshevRate), "Must have a Cantera Chebychev rate attribute"
 
         Tmin = self.Tmin.value_si
         Tmax = self.Tmax.value_si
@@ -294,4 +294,6 @@ cdef class Chebyshev(PDepKineticsModel):
         except:
             raise Exception('Chebyshev units {0} not found among accepted units for converting to '
                             'Cantera Chebyshev object.'.format(self.kunits))
-        ct_reaction.set_parameters(Tmin, Tmax, Pmin, Pmax, coeffs)
+
+        new_chebyshev = ct.ChebyshevRate(temperature_range=(Tmin, Tmax), pressure_range=(Pmin, Pmax), data=coeffs)
+        ct_reaction.rate = new_chebyshev

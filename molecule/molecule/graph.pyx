@@ -26,8 +26,8 @@
 ###############################################################################
 
 """
-This module contains an implementation of a graph data structure (the
-:class:`Graph` class) and functions for manipulating that graph, including
+This module contains an implementation of a graph data structure (the 
+:class:`Graph` class) and functions for manipulating that graph, including 
 efficient isomorphism functions. This module also contains base classes for
 the vertices and edges (:class:`Vertex` and :class:`Edge`, respectively) that
 are the components of a graph.
@@ -56,7 +56,7 @@ cdef class Vertex(object):
     `edges`             ``dict``        Dictionary of edges with keys being neighboring vertices
     `sorting_label`      ``int``         An integer label used to sort the vertices
     =================== =============== ========================================
-
+    
     """
 
     def __init__(self):
@@ -612,8 +612,8 @@ cdef class Graph(object):
         return False
 
     cpdef list get_all_cyclic_vertices(self):
-        """
-        Returns all vertices belonging to one or more cycles.
+        """ 
+        Returns all vertices belonging to one or more cycles.        
         """
         cdef list cyclic_vertices
         # Loop through all vertices and check whether they are cyclic
@@ -644,8 +644,8 @@ cdef class Graph(object):
     cpdef list get_polycycles(self):
         """
         Return a list of cycles that are polycyclic.
-        In other words, merge the cycles which are fused or spirocyclic into
-        a single polycyclic cycle, and return only those cycles.
+        In other words, merge the cycles which are fused or spirocyclic into 
+        a single polycyclic cycle, and return only those cycles. 
         Cycles which are not polycyclic are not returned.
         """
         cdef list polycyclic_vertices, continuous_cycles, sssr
@@ -663,7 +663,7 @@ cdef class Graph(object):
             return []
         else:
             # polycyclic vertices found, merge cycles together
-            # that have common polycyclic vertices
+            # that have common polycyclic vertices            
             continuous_cycles = []
             for vertex in polycyclic_vertices:
                 # First check if it is in any existing continuous cycles
@@ -719,7 +719,7 @@ cdef class Graph(object):
         """
         Get all disjoint monocyclic and polycyclic cycle clusters in the molecule.
         Takes the RC and recursively merges all cycles which share vertices.
-
+        
         Returns: monocyclic_cycles, polycyclic_cycles
         """
         cdef list rc, cycle_list, cycle_sets, monocyclic_cycles, polycyclic_cycles
@@ -745,7 +745,7 @@ cdef class Graph(object):
     cpdef tuple _merge_cycles(self, list cycle_sets):
         """
         Recursively merges cycles that share common atoms.
-
+        
         Returns one list with unmerged cycles and one list with merged cycles.
         """
         cdef list unmerged_cycles, merged_cycles, matched, u, m

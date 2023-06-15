@@ -305,7 +305,7 @@ class TestWilhoit(unittest.TestCase):
             s_act = wilhoit.get_entropy(T)
             self.assertAlmostEqual(s_act, s_exp, 4)
 
-        # Check that the fit reproduces the input parameters
+        # Check that the fit reproduces the input parameters 
         # Since we're fitting to data generated from a Wilhoit (and since the
         # fitting algorithm is linear least-squares), we should get the same
         # Wilhoit parameters (with a small allowance for fitting error)

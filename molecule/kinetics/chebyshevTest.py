@@ -118,7 +118,7 @@ class TestChebyshev(unittest.TestCase):
     def test_is_pressure_dependent(self):
         """
         Test the Chebyshev.is_pressure_dependent() method.
-
+        
         """
         self.assertTrue(self.chebyshev.is_pressure_dependent())
 
@@ -162,7 +162,7 @@ class TestChebyshev(unittest.TestCase):
     def test_fit_to_data2(self):
         """
         Test the Chebyshev.fit_to_data() method throws error without enough degrees of freedom.
-
+        
         Here only 3 temperatures are given, but the polynomial desired has 6 parameters.
         """
         Tdata = np.array([300, 1200, 2000])
