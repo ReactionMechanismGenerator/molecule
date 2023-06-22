@@ -34,8 +34,8 @@ This is the rmg module.
 import os
 import os.path
 
-from rmgpy.version import __version__
-from rmgpy.exceptions import SettingsError
+from molecule.version import __version__
+from molecule.exceptions import SettingsError
 
 
 ################################################################################
