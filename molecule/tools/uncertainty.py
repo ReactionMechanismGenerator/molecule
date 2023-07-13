@@ -31,10 +31,10 @@ import os
 
 import numpy as np
 
-import rmgpy.util as util
-from rmgpy.species import Species
-from rmgpy.tools.data import GenericData
-from rmgpy.tools.plot import parse_csv_data, plot_sensitivity, ReactionSensitivityPlot, ThermoSensitivityPlot
+import molecule.util as util
+from molecule.species import Species
+from molecule.tools.data import GenericData
+from molecule.tools.plot import parse_csv_data, plot_sensitivity, ReactionSensitivityPlot, ThermoSensitivityPlot
 
 
 class ThermoParameterUncertainty(object):
@@ -294,7 +294,7 @@ class Uncertainty(object):
         By default, this function loads all the kinetics families, only the training kinetics depository,
         the primaryThermoLibrary, and no reaction libraries.  
         """
-        from rmgpy.data.rmg import RMGDatabase
+        from molecule.data.rmg import RMGDatabase
         from rmgpy import settings
 
         if not kinetics_depositories:
@@ -330,7 +330,7 @@ class Uncertainty(object):
         containing information about the source of the thermodynamic and kinetic
         parameters
         """
-        from rmgpy.chemkin import load_chemkin_file
+        from molecule.chemkin import load_chemkin_file
 
         self.species_list, self.reaction_list = load_chemkin_file(chemkin_path,
                                                                   dictionary_path=dictionary_path,
@@ -597,10 +597,10 @@ class Uncertainty(object):
         number is the number of top species thermo or reaction kinetics desired to be plotted
         """
 
-        from rmgpy.solver import SimpleReactor, TerminationTime
-        from rmgpy.quantity import Quantity
-        from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
-        from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
+        from molecule.solver import SimpleReactor, TerminationTime
+        from molecule.quantity import Quantity
+        from molecule.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
+        from molecule.rmg.settings import ModelSettings, SimulatorSettings
         T = Quantity(T)
         P = Quantity(P)
         termination = [TerminationTime(Quantity(termination_time))]

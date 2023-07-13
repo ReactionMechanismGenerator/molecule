@@ -38,7 +38,7 @@ def pass_cutting_threshold(species):
     returns `True` for passing cutting threshold.
     """
 
-    from rmgpy.rmg.input import get_input
+    from molecule.rmg.input import get_input
 
     try:
         species_constraints = get_input('species_constraints')
@@ -64,7 +64,7 @@ def fails_species_constraints(species):
     the speciesConstraints set by the user.  If not, returns `True` for failing speciesConstraints.
     """
 
-    from rmgpy.rmg.input import get_input
+    from molecule.rmg.input import get_input
 
     try:
         species_constraints = get_input('species_constraints')
