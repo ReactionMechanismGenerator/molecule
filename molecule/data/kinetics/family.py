@@ -45,7 +45,7 @@ import numpy as np
 from sklearn.model_selection import KFold
 
 from molecule import settings
-from molecule.constraints import fails_species_constraints
+# from molecule.constraints import fails_species_constraints
 from molecule.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures, get_all_combinations
 from molecule.data.kinetics.common import save_entry, find_degenerate_reactions, generate_molecule_combos, \
                                        ensure_independent_atom_ids
@@ -61,7 +61,7 @@ from molecule.molecule import Bond, GroupBond, Group, Molecule
 from molecule.molecule.atomtype import ATOMTYPES
 from molecule.reaction import Reaction, same_species_lists
 from molecule.species import Species
-from molecule.tools.uncertainty import KineticParameterUncertainty
+# from molecule.tools.uncertainty import KineticParameterUncertainty
 from molecule.molecule.fragment import Fragment
 
 ################################################################################
