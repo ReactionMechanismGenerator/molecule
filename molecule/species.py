@@ -100,7 +100,7 @@ class Species(object):
         self.index = index
         self.label = label
         self.thermo = thermo
-        self.conformer = conformer
+        # self.conformer = conformer
         self.molecule = molecule or []
         self.transport_data = transport_data
         self.reactive = reactive
