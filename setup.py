@@ -148,7 +148,7 @@ import logging
 logging.error(ext_modules)
 # Initiate the build and/or installation
 setup(
-    name='rmgmolecule',
+    name='RMG-Py',
     version=__version__,
     description='Reaction Mechanism Generator',
     author='William H. Green and the RMG Team',
