@@ -1,8 +1,7 @@
 python:
-  - 3.8
+  - 3.7
 numpy:
   - 1.19
-
 # Specifically for Travis build. Should change if building locally.
 CONDA_BUILD_SYSROOT:
-  - /Library/Developer/CommandLineTools/SDKs/MacOSX10.10.sdk # [osx]
+  - /Library/Developer/CommandLineTools/SDKs/MacOSX10.10.sdk # [osx]s
