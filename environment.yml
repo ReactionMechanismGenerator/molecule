@@ -16,4 +16,4 @@ dependencies:
   - quantities
   - scipy
   - scikit-learn
-  - python=3.7
+  - python
