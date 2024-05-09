@@ -1,7 +1,7 @@
 # For conda build
 package:
   name: rmgmolecule
-  version: 0.2.0
+  version: 0.3.0
 
 source:
   path: ../
@@ -13,33 +13,33 @@ requirements:
   build:
     - {{ compiler('c') }} # [unix]
   host:
-    - cython >=0.25.2
+    - cython >=0.25.2,<3
     - lpsolve55
     - numpy
-    - openbabel >=3
+    - conda-forge::openbabel >=3
     - pyrdl
-    - python==3.7
+    - python
     - quantities
-    - rdkit >=2018
+    - rdkit >=2020.03.3.0
     - scipy
     - scikit-learn
     - setuptools
   run:
     - cairo
     - cairocffi
-    - cython >=0.25.2
+    - cython >=0.25.2,<3
     - gprof2dot
     - graphviz
     - jinja2
     - jupyter
     - lpsolve55
     - {{ pin_compatible('numpy') }}
-    - openbabel >=3
+    - conda-forge::openbabel >=3
     - pydot
     - pyrdl
-    - python==3.7
+    - python
     - quantities
-    - rdkit >=2018
+    - rdkit >=2020.03.3.0
     - scikit-learn
 test:
   imports:
