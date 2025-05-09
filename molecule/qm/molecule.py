@@ -44,7 +44,7 @@ import molecule.molecule
 import molecule.qm.qmdata as qmdata
 import molecule.qm.symmetry as symmetry
 import molecule.quantity
-#import molecule.statmech
+# import molecule.statmech
 import molecule.thermo
 from molecule.qm.qmdata import parse_cclib_data
 from molecule.thermo import ThermoData
@@ -408,19 +408,28 @@ class QMMolecule(object):
         parser = self.get_parser(self.output_file_path)
         parser.logger.setLevel(
             logging.ERROR
-        )  # cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-        parser.rotcons = (
+        )  # cf. https://cclib.github.io/index.html#how-to-use-cclib
+        parser.molmass = None # give it an attribute and it won't delete it, leaving it on the parser object
+        parser.rotcons = (  # for cclib < 1.8.0
             []
-        )  # give it an attribute and it won't delete it, leaving it on the parser object
-        parser.molmass = None  # give it an attribute and it won't delete it, leaving it on the parser object
-        cclib_data = parser.parse()
+        )
+        parser.rotconsts = (  # for cclib >= 1.8.0
+            []
+        )
+        cclib_data = parser.parse()  # fills in either parser.rotcons or parser.rotconsts but not both
+        assert bool(parser.rotconsts) != bool(parser.rotcons)
+        if parser.rotcons:  # for cclib < 1.8.0
+            cclib_data.rotcons = (
+                parser.rotcons
+            )
+        else:  # for cclib >= 1.8.0
+            cclib_data.rotconsts = (
+                parser.rotconsts
+            )
         radical_number = self.molecule.get_radical_count()
-        cclib_data.rotcons = (
-            parser.rotcons
-        )  # this hack required because rotcons not part of a default cclib data object
         cclib_data.molmass = (
             parser.molmass
-        )  # this hack required because rotcons not part of a default cclib data object
+        )  # this hack required because molmass is not part of a default cclib data object
         qm_data = parse_cclib_data(
             cclib_data, radical_number + 1
         )  # Should `radical_number+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
@@ -520,11 +529,11 @@ class QMMolecule(object):
         self.qm_data = local_context["qmData"]
         return thermo
 
-    def get_augmented_inchi_key(self):
+    def get_augmented_inchi_key(self, backend='rdkit-first'):
         """
         Returns the augmented InChI from self.molecule
         """
-        return self.molecule.to_augmented_inchi_key()
+        return self.molecule.to_augmented_inchi_key(backend=backend)
 
     def get_mol_file_path_for_calculation(self, attempt):
         """
@@ -555,7 +564,7 @@ class QMMolecule(object):
         if self.point_group.chiral:
             return molecule.quantity.constants.R * math.log(2)
         else:
-            return 0.
+            return 0.0
 
     # def calculate_thermo_data(self):
     #     """
@@ -567,16 +576,21 @@ class QMMolecule(object):
     #     assert self.qm_data, "Need QM Data first in order to calculate thermo."
     #     assert self.point_group, "Need Point Group first in order to calculate thermo."
     #
-    #     mass = getattr(self.qm_data, 'molecularMass', None)
+    #     mass = getattr(self.qm_data, "molecularMass", None)
     #     if mass is None:
     #         # If using a cclib that doesn't read molecular mass, for example
-    #         mass = sum(molecule.molecule.element.get_element(int(a)).mass for a in self.qm_data.atomicNumbers)
-    #         mass = molecule.quantity.Mass(mass, 'kg/mol')
+    #         mass = sum(
+    #             molecule.molecule.element.get_element(int(a)).mass
+    #             for a in self.qm_data.atomicNumbers
+    #         )
+    #         mass = molecule.quantity.Mass(mass, "kg/mol")
     #     trans = molecule.statmech.IdealGasTranslation(mass=mass)
     #     if self.point_group.linear:
     #         # there should only be one rotational constant for a linear rotor
-    #         rotational_constant = molecule.quantity.Frequency(max(self.qm_data.rotationalConstants.value),
-    #                                                        self.qm_data.rotationalConstants.units)
+    #         rotational_constant = molecule.quantity.Frequency(
+    #             max(self.qm_data.rotationalConstants.value),
+    #             self.qm_data.rotationalConstants.units,
+    #         )
     #         rot = molecule.statmech.LinearRotor(
     #             rotationalConstant=rotational_constant,
     #             symmetry=self.point_group.symmetry_number,
@@ -591,9 +605,11 @@ class QMMolecule(object):
     #
     #     # @todo: We need to extract or calculate E0 somehow from the qmdata
     #     E0 = (0, "kJ/mol")
-    #     self.statesmodel = molecule.statmech.Conformer(E0=E0,
-    #                                                 modes=[trans, rot, vib],
-    #                                                 spin_multiplicity=self.qm_data.groundStateDegeneracy)
+    #     self.statesmodel = molecule.statmech.Conformer(
+    #         E0=E0,
+    #         modes=[trans, rot, vib],
+    #         spin_multiplicity=self.qm_data.groundStateDegeneracy,
+    #     )
     #
     #     # we will use number of atoms from above (alternatively, we could use the chemGraph); this is needed to test whether the species is monoatomic
     #     # SI units are J/mol, but converted to kJ/mol for generating the thermo.
@@ -612,7 +628,7 @@ class QMMolecule(object):
     #         S298=(S298, "J/(mol*K)"),
     #         Tmin=(300.0, "K"),
     #         Tmax=(2000.0, "K"),
-    #         comment=comment
+    #         comment=comment,
     #     )
     #     self.thermo = thermo
     #     return thermo
