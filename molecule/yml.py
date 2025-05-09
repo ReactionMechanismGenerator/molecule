@@ -34,6 +34,7 @@ Reaction Mechanism Simulator (RMS)
 
 import os
 import yaml
+import logging
 
 from molecule.chemkin import load_chemkin_file
 from molecule.species import Species
@@ -125,6 +126,7 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
             result_dict["henrylawconstant"]["type"] = "TemperatureDependentHenryLawConstant"
             result_dict["henrylawconstant"]["Ts"] = obj.henry_law_constant_data.Ts
             result_dict["henrylawconstant"]["kHs"] = obj.henry_law_constant_data.kHs
+        result_dict["comment"] =  obj.thermo.comment
     elif isinstance(obj, NASA):
         result_dict["polys"] = [obj_to_dict(k, spcs) for k in obj.polynomials]
         result_dict["type"] = "NASA"
@@ -140,12 +142,38 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
         result_dict["type"] = "ElementaryReaction"
         result_dict["radicalchange"] = sum([get_radicals(x) for x in obj.products]) - \
                                        sum([get_radicals(x) for x in obj.reactants])
+        result_dict["electronchange"] = -sum([spc.molecule[0].get_net_charge() for spc in obj.products]) + sum([spc.molecule[0].get_net_charge() for spc in obj.reactants])
+        result_dict["comment"] = obj.kinetics.comment
     elif isinstance(obj, Arrhenius):
         obj.change_t0(1.0)
         result_dict["type"] = "Arrhenius"
         result_dict["A"] = obj.A.value_si
         result_dict["Ea"] = obj.Ea.value_si
         result_dict["n"] = obj.n.value_si
+    elif isinstance(obj, ArrheniusChargeTransfer):
+        obj.change_t0(1.0)
+        obj.change_v0(0.0)
+        result_dict["type"] = "Arrheniusq"
+        result_dict["A"] = obj.A.value_si
+        result_dict["Ea"] = obj.Ea.value_si
+        result_dict["n"] = obj.n.value_si
+        result_dict["q"] = obj._alpha.value_si*obj._electrons.value_si
+    elif isinstance(obj, SurfaceChargeTransfer):
+        obj.change_v0(0.0)
+        result_dict["type"] = "Arrheniusq"
+        result_dict["A"] = obj.A.value_si
+        result_dict["Ea"] = obj.Ea.value_si
+        result_dict["n"] = obj.n.value_si
+        result_dict["q"] = obj._alpha.value_si*obj._electrons.value_si
+    elif isinstance(obj, Marcus):
+        result_dict["type"] = "Marcus"
+        result_dict["A"] = obj.A.value_si
+        result_dict["n"] = obj.n.value_si
+        result_dict["lmbd_i_coefs"] = obj.lmbd_i_coefs.value_si.tolist()
+        result_dict["lmbd_o"] = obj.lmbd_o.value_si
+        result_dict["wr"] = obj.wr.value_si
+        result_dict["wp"] = obj.wp.value_si
+        result_dict["beta"] = obj.beta.value_si
     elif isinstance(obj, StickingCoefficient):
         obj.change_t0(1.0)
         result_dict["type"] = "StickingCoefficient"
