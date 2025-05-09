@@ -138,6 +138,7 @@ def save_entry(f, entry):
         f.write('        alpha = {0!r},\n'.format(entry.data.alpha))
         f.write('        beta = {0!r},\n'.format(entry.data.beta))
         f.write('        eps = {0!r},\n'.format(entry.data.eps))
+        f.write('        n = {0!r},\n'.format(entry.data.n))
         f.write('        name_in_coolprop = "{0!s}",\n'.format(entry.data.name_in_coolprop))
         f.write('    ),\n')
     elif entry.data is None:
@@ -338,6 +339,19 @@ def average_solute_data(solute_data_list):
 #     except:
 #         raise DatabaseError(f"Gas-phase saturation density is not available for {compound_name} at {temp} K.")
 #     return rho_g
+#
+#
+# def get_gas_saturation_pressure(compound_name, temp):
+#     """
+#     Returns the saturation pressure of the solvent in Pa if the solvent is available in CoolProp (i.e. name_in_coolprop is
+#     not None); raises DatabaseError if the solvent is not available in CoolProp (i.e. name_in_coolprop is None).
+#     """
+#     try:
+#         Psat_g = PropsSI('P', 'T', temp, 'Q', 0, compound_name)  # saturated gas phase pressure in Pa
+#     except:
+#         raise DatabaseError(f"Gas-phase saturation pressure is not available for {compound_name} at {temp} K.")
+#     return Psat_g
+
 
 ################################################################################
 
@@ -348,7 +362,7 @@ class SolventData(object):
 
     def __init__(self, s_h=None, b_h=None, e_h=None, l_h=None, a_h=None,
                  c_h=None, s_g=None, b_g=None, e_g=None, l_g=None, a_g=None, c_g=None, A=None, B=None,
-                 C=None, D=None, E=None, alpha=None, beta=None, eps=None, name_in_coolprop=None):
+                 C=None, D=None, E=None, alpha=None, beta=None, eps=None, name_in_coolprop=None, n=None):
         self.s_h = s_h
         self.b_h = b_h
         self.e_h = e_h
@@ -372,6 +386,8 @@ class SolventData(object):
         self.beta = beta
         # This is the dielectric constant
         self.eps = eps
+        #This is the index of refraction
+        self.n = n
         # This corresponds to the solvent's name in CoolProp. CoolProp is an external package used for
         # fluid property calculation. If the solvent is not available in CoolProp, this is set to None
         self.name_in_coolprop = name_in_coolprop
@@ -390,44 +406,33 @@ class SolventData(object):
         """
         return math.exp(self.A + (self.B / T) + (self.C * math.log(T)) + (self.D * (T ** self.E)))
 
+    def get_solvent_density(self, T):
+        """
+        Returns the density of the solvent in Pa if the solvent is available in CoolProp (i.e. name_in_coolprop is
+        not None); raises DatabaseError if the solvent is not available in CoolProp (i.e. name_in_coolprop is None).
+        """
+        if self.name_in_coolprop is not None:
+            return PropsSI('D', 'T', T, 'Q', 0, self.name_in_coolprop)
+        else:
+            raise DatabaseError("Saturation pressure is not available for the solvent whose `name_in_coolprop` is None")
 
-    # def get_solvent_saturation_pressure(self, T):
-    #     """
-    #     Returns the saturation pressure of the solvent in Pa if the solvent is available in CoolProp (i.e. name_in_coolprop is
-    #     not None); raises DatabaseError if the solvent is not available in CoolProp (i.e. name_in_coolprop is None).
-    #     """
-    #     if self.name_in_coolprop is not None:
-    #         return PropsSI('P', 'T', T, 'Q', 0, self.name_in_coolprop)
-    #     else:
-    #         raise DatabaseError("Saturation pressure is not available for the solvent whose `name_in_coolprop` is None")
-    #
-    # def get_solvent_density(self, T):
-    #     """
-    #     Returns the density of the solvent in Pa if the solvent is available in CoolProp (i.e. name_in_coolprop is
-    #     not None); raises DatabaseError if the solvent is not available in CoolProp (i.e. name_in_coolprop is None).
-    #     """
-    #     if self.name_in_coolprop is not None:
-    #         return PropsSI('D', 'T', T, 'Q', 0, self.name_in_coolprop)
-    #     else:
-    #         raise DatabaseError("Saturation pressure is not available for the solvent whose `name_in_coolprop` is None")
-    #
-    # def get_solvent_coolprop_Tmin(self):
-    #     """
-    #     Returns the minimum temperature range available for the solvent in  CoolProp
-    #     """
-    #     if self.name_in_coolprop is not None:
-    #         return PropsSI('Tmin', self.name_in_coolprop)
-    #     else:
-    #         raise DatabaseError("Tmin is not available for the solvent whose `name_in_coolprop` is None")
-    #
-    # def get_solvent_coolprop_Tcrit(self):
-    #     """
-    #     Returns the critical temperature of solvent from CoolProp
-    #     """
-    #     if self.name_in_coolprop is not None:
-    #         return PropsSI('Tcrit', self.name_in_coolprop)
-    #     else:
-    #         raise DatabaseError("Critical temperature is not available for the solvent whose `name_in_coolprop` is None")
+    def get_solvent_coolprop_Tmin(self):
+        """
+        Returns the minimum temperature range available for the solvent in  CoolProp
+        """ 
+        if self.name_in_coolprop is not None:
+            return PropsSI('Tmin', self.name_in_coolprop)
+        else:
+            raise DatabaseError("Tmin is not available for the solvent whose `name_in_coolprop` is None")
+
+    def get_solvent_coolprop_Tcrit(self):
+        """
+        Returns the critical temperature of solvent from CoolProp
+        """ 
+        if self.name_in_coolprop is not None:
+            return PropsSI('Tcrit', self.name_in_coolprop)
+        else:
+            raise DatabaseError("Critical temperature is not available for the solvent whose `name_in_coolprop` is None")
 
 class SolvationCorrection(object):
     """
@@ -529,6 +534,299 @@ class SoluteData(object):
             Vtot -= len(molecule.get_bonds(atom)) * 6.56 / 2
 
         self.V = Vtot / 100  # division by 100 to get units correct.
+
+class SoluteTSData(object):
+    """
+    Stores Abraham parameters to characterize a solute
+    """
+    # Set class variable with McGowan volumes
+    mcgowan_volumes = {
+        1: 8.71, 2: 6.75, 3: 22.23,
+        6: 16.35, 7: 14.39, 8: 12.43, 9: 10.47, 10: 8.51,
+        14: 26.83, 15: 24.87, 16: 22.91, 17: 20.95, 18: 18.99,
+        35: 26.21, 53: 34.53,
+    }
+
+    def __init__(self, Sg_g=0.0, Bg_g=0.0, Eg_g=0.0, Lg_g=0.0, Ag_g=0.0, Cg_g=0.0, Sh_g=0.0, Bh_g=0.0, Eh_g=0.0, Lh_g=0.0, Ah_g=0.0, Ch_g=0.0,
+                 K_g=0.0, Sg_h=0.0, Bg_h=0.0, Eg_h=0.0, Lg_h=0.0, Ag_h=0.0, Cg_h=0.0, Sh_h=0.0, Bh_h=0.0, Eh_h=0.0, Lh_h=0.0, Ah_h=0.0, Ch_h=0.0, K_h=0.0, comment=None):
+        """
+        Xi_j correction is associated with calculating j (Gibbs or enthalpy) using solvent parameters for i (abraharm=g, mintz=h)
+        """
+        self.Sg_g = Sg_g
+        self.Bg_g = Bg_g
+        self.Eg_g = Eg_g
+        self.Lg_g = Lg_g
+        self.Ag_g = Ag_g
+        self.Cg_g = Cg_g
+        self.Sh_g = Sh_g
+        self.Bh_g = Bh_g
+        self.Eh_g = Eh_g
+        self.Lh_g = Lh_g
+        self.Ah_g = Ah_g
+        self.Ch_g = Ch_g
+        self.K_g = K_g
+
+        self.Sg_h = Sg_h
+        self.Bg_h = Bg_h
+        self.Eg_h = Eg_h
+        self.Lg_h = Lg_h
+        self.Ag_h = Ag_h
+        self.Cg_h = Cg_h
+        self.Sh_h = Sh_h
+        self.Bh_h = Bh_h
+        self.Eh_h = Eh_h
+        self.Lh_h = Lh_h
+        self.Ah_h = Ah_h
+        self.Ch_h = Ch_h
+        self.K_h = K_h
+
+        self.comment = comment
+
+    def __repr__(self):
+        return "SoluteTSData(Sg_g={0},Bg_g={1},Eg_g={2},Lg_g={3},Ag_g={4},Cg_g={5},Sh_g={6},Bh_g={7},Eh_g={8},Lh_g={9},Ah_g={10},Ch_g={11},K_g={12},Sg_h={13},Bg_h={14},Eg_h={15},Lg_h={16},Ag_h={17},Cg_h={18},Sh_h={19},Bh_h={20},Eh_h={21},Lh_h={22},Ah_h={23},Ch_h={24},K_h={25},comment={26!r})".format(
+            self.Sg_g,
+            self.Bg_g,
+            self.Eg_g,
+            self.Lg_g,
+            self.Ag_g,
+            self.Cg_g,
+            self.Sh_g,
+            self.Bh_g,
+            self.Eh_g,
+            self.Lh_g,
+            self.Ah_g,
+            self.Ch_g,
+            self.K_g,
+            self.Sg_h,
+            self.Bg_h,
+            self.Eg_h,
+            self.Lg_h,
+            self.Ag_h,
+            self.Cg_h,
+            self.Sh_h,
+            self.Bh_h,
+            self.Eh_h,
+            self.Lh_h,
+            self.Ah_h,
+            self.Ch_h,
+            self.K_h, self.comment)
+
+    def __add__(self,sol):
+        return SoluteTSData(
+            Sg_g = self.Sg_g+sol.Sg_g,
+            Bg_g = self.Bg_g+sol.Bg_g,
+            Eg_g = self.Eg_g+sol.Eg_g,
+            Lg_g = self.Lg_g+sol.Lg_g,
+            Ag_g = self.Ag_g+sol.Ag_g,
+            Cg_g = self.Cg_g+sol.Cg_g,
+            Sh_g = self.Sh_g+sol.Sh_g,
+            Bh_g = self.Bh_g+sol.Bh_g,
+            Eh_g = self.Eh_g+sol.Eh_g,
+            Lh_g = self.Lh_g+sol.Lh_g,
+            Ah_g = self.Ah_g+sol.Ah_g,
+            Ch_g = self.Ch_g+sol.Ch_g,
+            K_g = self.K_g+sol.K_g,
+            Sg_h = self.Sg_h+sol.Sg_h,
+            Bg_h = self.Bg_h+sol.Bg_h,
+            Eg_h = self.Eg_h+sol.Eg_h,
+            Lg_h = self.Lg_h+sol.Lg_h,
+            Ag_h = self.Ag_h+sol.Ag_h,
+            Cg_h = self.Cg_h+sol.Cg_h,
+            Sh_h = self.Sh_h+sol.Sh_h,
+            Bh_h = self.Bh_h+sol.Bh_h,
+            Eh_h = self.Eh_h+sol.Eh_h,
+            Lh_h = self.Lh_h+sol.Lh_h,
+            Ah_h = self.Ah_h+sol.Ah_h,
+            Ch_h = self.Ch_h+sol.Ch_h,
+            K_h = self.K_h+sol.K_h,
+        )
+
+    def __sub__(self,sol):
+        return SoluteTSData(
+            Sg_g = self.Sg_g-sol.Sg_g,
+            Bg_g = self.Bg_g-sol.Bg_g,
+            Eg_g = self.Eg_g-sol.Eg_g,
+            Lg_g = self.Lg_g-sol.Lg_g,
+            Ag_g = self.Ag_g-sol.Ag_g,
+            Cg_g = self.Cg_g-sol.Cg_g,
+            Sh_g = self.Sh_g-sol.Sh_g,
+            Bh_g = self.Bh_g-sol.Bh_g,
+            Eh_g = self.Eh_g-sol.Eh_g,
+            Lh_g = self.Lh_g-sol.Lh_g,
+            Ah_g = self.Ah_g-sol.Ah_g,
+            Ch_g = self.Ch_g-sol.Ch_g,
+            K_g = self.K_g-sol.K_g,
+            Sg_h = self.Sg_h-sol.Sg_h,
+            Bg_h = self.Bg_h-sol.Bg_h,
+            Eg_h = self.Eg_h-sol.Eg_h,
+            Lg_h = self.Lg_h-sol.Lg_h,
+            Ag_h = self.Ag_h-sol.Ag_h,
+            Cg_h = self.Cg_h-sol.Cg_h,
+            Sh_h = self.Sh_h-sol.Sh_h,
+            Bh_h = self.Bh_h-sol.Bh_h,
+            Eh_h = self.Eh_h-sol.Eh_h,
+            Lh_h = self.Lh_h-sol.Lh_h,
+            Ah_h = self.Ah_h-sol.Ah_h,
+            Ch_h = self.Ch_h-sol.Ch_h,
+            K_h = self.K_h-sol.K_h,
+        )
+
+    def __eq__(self,sol):
+        if self.Sg_g != sol.Sg_g:
+            return False
+        elif self.Bg_g != sol.Bg_g:
+            return False
+        elif self.Eg_g != sol.Eg_g:
+            return False
+        elif self.Lg_g != sol.Lg_g:
+            return False
+        elif self.Ag_g != sol.Ag_g:
+            return False
+        elif self.Cg_g != sol.Cg_g:
+            return False
+        elif self.Sh_g != sol.Sh_g:
+            return False
+        elif self.Bh_g != sol.Bh_g:
+            return False
+        elif self.Eh_g != sol.Eh_g:
+            return False
+        elif self.Lh_g != sol.Lh_g:
+            return False
+        elif self.Ah_g != sol.Ah_g:
+            return False
+        elif self.Ch_g != sol.Ch_g:
+            return False
+        elif self.K_g != sol.K_g:
+            return False
+        elif self.Sg_h != sol.Sg_h:
+            return False
+        elif self.Bg_h != sol.Bg_h:
+            return False
+        elif self.Eg_h != sol.Eg_h:
+            return False
+        elif self.Lg_h != sol.Lg_h:
+            return False
+        elif self.Ag_h != sol.Ag_h:
+            return False
+        elif self.Cg_h != sol.Cg_h:
+            return False
+        elif self.Sh_h != sol.Sh_h:
+            return False
+        elif self.Bh_h != sol.Bh_h:
+            return False
+        elif self.Eh_h != sol.Eh_h:
+            return False
+        elif self.Lh_h != sol.Lh_h:
+            return False
+        elif self.Ah_h != sol.Ah_h:
+            return False
+        elif self.Ch_h != sol.Ch_h:
+            return False
+        elif self.K_h != sol.K_h:
+            return False
+        else:
+            return True
+
+    def __mul__(self,num):
+        return SoluteTSData(
+            Sg_g = self.Sg_g*num,
+            Bg_g = self.Bg_g*num,
+            Eg_g = self.Eg_g*num,
+            Lg_g = self.Lg_g*num,
+            Ag_g = self.Ag_g*num,
+            Cg_g = self.Cg_g*num,
+            Sh_g = self.Sh_g*num,
+            Bh_g = self.Bh_g*num,
+            Eh_g = self.Eh_g*num,
+            Lh_g = self.Lh_g*num,
+            Ah_g = self.Ah_g*num,
+            Ch_g = self.Ch_g*num,
+            K_g = self.K_g*num,
+            Sg_h = self.Sg_h*num,
+            Bg_h = self.Bg_h*num,
+            Eg_h = self.Eg_h*num,
+            Lg_h = self.Lg_h*num,
+            Ag_h = self.Ag_h*num,
+            Cg_h = self.Cg_h*num,
+            Sh_h = self.Sh_h*num,
+            Bh_h = self.Bh_h*num,
+            Eh_h = self.Eh_h*num,
+            Lh_h = self.Lh_h*num,
+            Ah_h = self.Ah_h*num,
+            Ch_h = self.Ch_h*num,
+            K_h = self.K_h*num,
+        )
+
+    def calculate_corrections(self,solv):
+        dG298 = 0.0
+        dG298 += -(np.log(10)*8.314*298.15)*(self.Sg_g*solv.s_g+self.Bg_g*solv.b_g+self.Eg_g*solv.e_g+self.Lg_g*solv.l_g+self.Ag_g*solv.a_g+self.Cg_g*solv.c_g+self.K_g)
+        dG298 += 1000.0*(self.Sh_g*solv.s_h+self.Bh_g*solv.b_h+self.Eh_g*solv.e_h+self.Lh_g*solv.l_h+self.Ah_g*solv.a_h+self.Ch_g*solv.c_h)
+        dH298 = 0.0
+        dH298 += -(np.log(10)*8.314*298.15)*(self.Sg_h*solv.s_g+self.Bg_h*solv.b_g+self.Eg_h*solv.e_g+self.Lg_h*solv.l_g+self.Ag_h*solv.a_g+self.Cg_h*solv.c_g+self.K_h)
+        dH298 += 1000.0*(self.Sh_h*solv.s_h+self.Bh_h*solv.b_h+self.Eh_h*solv.e_h+self.Lh_h*solv.l_h+self.Ah_h*solv.a_h+self.Ch_h*solv.c_h)
+        return dG298,dH298
+
+class SoluteTSDiffData(object):
+    """
+    Stores Abraham parameters to characterize a solute
+    """
+    # Set class variable with McGowan volumes
+    mcgowan_volumes = {
+        1: 8.71, 2: 6.75, 3: 22.23,
+        6: 16.35, 7: 14.39, 8: 12.43, 9: 10.47, 10: 8.51,
+        14: 26.83, 15: 24.87, 16: 22.91, 17: 20.95, 18: 18.99,
+        35: 26.21, 53: 34.53,
+    }
+
+    def __init__(self, S_g=None, B_g=None, E_g=None, L_g=None, A_g=None,
+                 K_g=None, S_h=None, B_h=None, E_h=None, L_h=None, A_h=None, K_h=None, comment=None):
+        self.S_g = S_g
+        self.B_g = B_g
+        self.E_g = E_g
+        self.L_g = L_g
+        self.A_g = A_g
+        self.K_g = K_g
+        self.S_h = S_h
+        self.B_h = B_h
+        self.E_h = E_h
+        self.L_h = L_h
+        self.A_h = A_h
+        self.K_h = K_h
+
+        self.comment=comment
+
+    def __repr__(self):
+        return "SoluteTSDiffData(S_g={0},B_g={1},E_g={2},L_g={3},A_g={4},K_g={5},S_h={6},B_h={7},E_h={8},L_h={9},A_h={10},K_h={11},comment={12!r})".format(
+            self.S_g, self.B_g, self.E_g, self.L_g, self.A_g, self.K_g, self.S_h, self.B_h, self.E_h,
+            self.L_h, self.A_h, self.K_h, self.comment)
+
+def to_soluteTSdata(data,reactants=None):
+    if isinstance(data,SoluteTSData):
+        return data
+    elif isinstance(data,SoluteData):
+        return SoluteTSData(Sg_g=data.S,Bg_g=data.B,Eg_g=data.E,Lg_g=data.L,Ag_g=data.A,Cg_g=1.0,
+                            Sh_h=data.S,Bh_h=data.B,Eh_h=data.E,Lh_h=data.L,Ah_h=data.A,Ch_h=1.0,comment=data.comment)
+    elif isinstance(data,SoluteTSDiffData):
+        from molecule.data.rmg import get_db
+        solvation_database = get_db('solvation')
+        react_data = [solvation_database.get_solute_data(spc.copy(deep=True)) for spc in reactants]
+        return SoluteTSData(Sg_g=data.S_g+sum([x.S for x in react_data]),
+                            Bg_g=data.B_g+sum([x.B for x in react_data]),
+                            Eg_g=data.E_g+sum([x.E for x in react_data]),
+                            Lg_g=data.L_g+sum([x.L for x in react_data]),
+                            Ag_g=data.A_g+sum([x.A for x in react_data]),
+                            K_g=data.K_g,
+                            Sg_h=data.S_h,
+                            Bg_h=data.B_h,
+                            Eg_h=data.E_h,
+                            Lg_h=data.L_h,
+                            Ag_h=data.A_h,
+                            Sh_h=sum([x.S for x in react_data]),
+                            Bh_h=sum([x.B for x in react_data]),
+                            Eh_h=sum([x.E for x in react_data]),
+                            Lh_h=sum([x.L for x in react_data]),
+                            Ah_h=sum([x.A for x in react_data]),
+                            K_h=data.K_h,comment=data.comment)
 
 class DataCountGAV(object):
     """
@@ -1196,6 +1494,9 @@ class SolvationDatabase(object):
         by gas-phase thermo estimate.
         """
         molecule = species.molecule[0]
+        if molecule.contains_surface_site():
+            molecule = molecule.get_desorbed_molecules()[0]
+            molecule.saturate_unfilled_valence()
         molecule.clear_labeled_atoms()
         molecule.update_atomtypes()
         solute_data = self.estimate_solute_via_group_additivity(molecule)
@@ -1306,6 +1607,7 @@ class SolvationDatabase(object):
                 saturated_struct.remove_bond(bond)
                 saturated_struct.remove_atom(H)
                 atom.increment_radical()
+            saturated_struct.update_charge() # we need to update charges before updating lone pairs
             saturated_struct.update()
             try:
                 self._add_group_solute_data(solute_data, self.groups['radical'], saturated_struct, {'*': atom})
@@ -1717,7 +2019,7 @@ class SolvationDatabase(object):
             entry = ring_database.descend_tree(molecule, atoms)
             matched_ring_entries.append(entry)
 
-        if matched_ring_entries is []:
+        if matched_ring_entries == []:
             raise KeyError('Node not found in database.')
         # Decide which group to keep
         is_partial_match = True
@@ -2012,30 +2314,33 @@ class SolvationDatabase(object):
 
         return self.get_T_dep_solvation_energy_from_input_298(delG298, delH298, delS298, solvent_name, T)
 
-    def get_T_dep_solvation_energy_from_input_298(self, delG298, delH298, delS298, solvent_name, T):
-        """Returns solvation free energy and K-factor for the input temperature based on the given solvation properties
-          values at 298 K.
-
-        Args:
-            delG298 (float): solvation free energy at 298 K in J/mol.
-            delH298 (float): solvation enthalpy at 298 K in J/mol.
-            delS298 (float): solvation entropy at 298 K in J/mol/K.
-            solvent_name (str): name of the solvent that is used in CoolProp.
-            T (float): input temperature in K.
-
-        Returns:
-            delG (float): solvation free energy at the input temperature in J/mol.
-            Kfactor (float): K-factor at the input temperature. K-factor is defined as a ratio of the mole fraction
-            of a solute in a gas-phase to the mole fraction of a solute in a liquid-phase at equilibrium
-
-        """
-
-        Kfactor = self.get_Kfactor(delG298, delH298, delS298, solvent_name, T)
-        rho_g = get_gas_saturation_density(solvent_name, T)
-        rho_l = get_liquid_saturation_density(solvent_name, T)
-        delG = constants.R * T * math.log(Kfactor * rho_g / (rho_l))  # in J/mol
-        return delG, Kfactor
-
+    # def get_T_dep_solvation_energy_from_input_298(self, delG298, delH298, delS298, solvent_name, T):
+    #     """Returns solvation free energy and K-factor for the input temperature based on the given solvation properties
+    #       values at 298 K.
+    #
+    #     Args:
+    #         delG298 (float): solvation free energy at 298 K in J/mol.
+    #         delH298 (float): solvation enthalpy at 298 K in J/mol.
+    #         delS298 (float): solvation entropy at 298 K in J/mol/K.
+    #         solvent_name (str): name of the solvent that is used in CoolProp.
+    #         T (float): input temperature in K.
+    #
+    #     Returns:
+    #         delG (float): solvation free energy at the input temperature in J/mol.
+    #         Kfactor (float): K-factor at the input temperature. K-factor is defined as a ratio of the mole fraction
+    #         of a solute in a gas-phase to the mole fraction of a solute in a liquid-phase at equilibrium
+    #         kH (float): the Henry's law constant at the input temperature. kH is defined as the ratio of the pressure
+    #         of a solute in the gas-phase to the concentration of a solute in the liquid-phase at equilibrium.
+    #     """
+    #
+    #     Kfactor = self.get_Kfactor(delG298, delH298, delS298, solvent_name, T)
+    #     rho_g = get_gas_saturation_density(solvent_name, T) # saturated gas phase density of the solvent, in mol/m^3
+    #     rho_l = get_liquid_saturation_density(solvent_name, T) # saturated liquid phase density of the solvent, in mol/m^3
+    #     Psat_g = get_gas_saturation_pressure(solvent_name, T)
+    #     kH = Kfactor * Psat_g / rho_l  # Henry's law constant as a fraction of the gas-phase partial pressure of solute to the liquid-phase concentration of solute
+    #     delG = constants.R * T * math.log(Kfactor * rho_g / (rho_l))  # in J/mol
+    #     return delG, Kfactor, kH
+    #
     # def get_Kfactor_parameters(self, delG298, delH298, delS298, solvent_name, T_trans_factor=0.75):
     #     """Returns fitted parameters for the K-factor piecewise functions given the solvation properties at 298 K.
     #
@@ -2142,7 +2447,7 @@ class SolvationDatabase(object):
         if not any([spec.is_solvent for spec in rmg.initial_species]):
             if solvent_structure is not None:
                 logging.info('One of the initial species must be the solvent')
-                raise ValueError('One of the initial species must be the solvent')
+                logging.warning("Solvent is not an initial species")
             else:
                 logging.info('One of the initial species must be the solvent with the same string name')
-                raise ValueError('One of the initial species must be the solvent with the same string name')
+                logging.warning("Solvent is not an initial species with the same string name")

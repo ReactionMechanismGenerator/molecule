@@ -28,7 +28,7 @@
 ###############################################################################
 
 """
-This script contains unit test of the :mod: 'rmgpy.transport' module and :mod: 'rmgpy.data.transport' module
+This script contains unit test of the :mod: 'molecule.transport' module and :mod: 'molecule.data.transport' module
 """
 
 import unittest
