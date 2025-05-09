@@ -29,10 +29,12 @@
 
 from molecule.kinetics.model import KineticsModel, PDepKineticsModel, TunnelingModel, \
                    get_rate_coefficient_units_from_reaction_order, get_reaction_order_from_rate_coefficient_units
-from molecule.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, ArrheniusBM
+from molecule.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
+                   ArrheniusBM, ArrheniusChargeTransfer, ArrheniusChargeTransferBM, Marcus
 from molecule.kinetics.chebyshev import Chebyshev
 from molecule.kinetics.falloff import ThirdBody, Lindemann, Troe
 from molecule.kinetics.kineticsdata import KineticsData, PDepKineticsData
 from molecule.kinetics.tunneling import Wigner, Eckart
 from molecule.kinetics.surface import SurfaceArrhenius, SurfaceArrheniusBEP, \
-                     StickingCoefficient, StickingCoefficientBEP
+                    StickingCoefficient, StickingCoefficientBEP, \
+                    SurfaceChargeTransfer, SurfaceChargeTransferBEP
