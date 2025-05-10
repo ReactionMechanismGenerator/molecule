@@ -232,58 +232,58 @@ cdef class Arrhenius(KineticsModel):
         """
         self._A.value_si *= factor
 
-    def to_cantera_kinetics(self, arrhenius_class=False):
-        """
-        Converts the RMG Arrhenius object to a cantera ArrheniusRate or
-        the auxiliary cantera Arrhenius class (used by falloff reactions). 
-        Inputs for both are (A,b,E)  where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol
-
-        arrhenius_class: If ``True``, uses cantera.Arrhenius (for falloff reactions). If ``False``, uses 
-        Cantera.ArrheniusRate
-        """
-
-        import cantera as ct
-
-        rate_units_dimensionality = {'1/s': 0,
-                                     's^-1': 0,
-                                     'm^3/(mol*s)': 1,
-                                     'm^6/(mol^2*s)': 2,
-                                     'cm^3/(mol*s)': 1,
-                                     'cm^6/(mol^2*s)': 2,
-                                     'm^3/(molecule*s)': 1,
-                                     'm^6/(molecule^2*s)': 2,
-                                     'cm^3/(molecule*s)': 1,
-                                     'cm^6/(molecule^2*s)': 2,
-                                     }
-
-        if self._T0.value_si != 1:
-            A = self._A.value_si / (self._T0.value_si) ** self._n.value_si
-        else:
-            A = self._A.value_si
-
-        try:
-            A *= 1000 ** rate_units_dimensionality[self._A.units]
-        except KeyError:
-            raise Exception('Arrhenius A-factor units {0} not found among accepted units for converting to '
-                            'Cantera Arrhenius object.'.format(self._A.units))
-
-        b = self._n.value_si
-        E = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
-        if arrhenius_class:
-            return ct.Arrhenius(A, b, E)
-        else:
-            return ct.ArrheniusRate(A, b, E)
-
-    def set_cantera_kinetics(self, ct_reaction, species_list):
-        """
-        Passes in a cantera Reaction() object and sets its
-        rate to a Cantera ArrheniusRate object.
-        """
-        import cantera as ct
-        assert isinstance(ct_reaction.rate, ct.ArrheniusRate), "Must have a Cantera ArrheniusRate attribute"
-
-        # Set the rate parameter to a cantera Arrhenius object
-        ct_reaction.rate = self.to_cantera_kinetics()
+    # def to_cantera_kinetics(self, arrhenius_class=False):
+    #     """
+    #     Converts the RMG Arrhenius object to a cantera ArrheniusRate or
+    #     the auxiliary cantera Arrhenius class (used by falloff reactions).
+    #     Inputs for both are (A,b,E)  where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol
+    #
+    #     arrhenius_class: If ``True``, uses cantera.Arrhenius (for falloff reactions). If ``False``, uses
+    #     Cantera.ArrheniusRate
+    #     """
+    #
+    #     import cantera as ct
+    #
+    #     rate_units_dimensionality = {'1/s': 0,
+    #                                  's^-1': 0,
+    #                                  'm^3/(mol*s)': 1,
+    #                                  'm^6/(mol^2*s)': 2,
+    #                                  'cm^3/(mol*s)': 1,
+    #                                  'cm^6/(mol^2*s)': 2,
+    #                                  'm^3/(molecule*s)': 1,
+    #                                  'm^6/(molecule^2*s)': 2,
+    #                                  'cm^3/(molecule*s)': 1,
+    #                                  'cm^6/(molecule^2*s)': 2,
+    #                                  }
+    #
+    #     if self._T0.value_si != 1:
+    #         A = self._A.value_si / (self._T0.value_si) ** self._n.value_si
+    #     else:
+    #         A = self._A.value_si
+    #
+    #     try:
+    #         A *= 1000 ** rate_units_dimensionality[self._A.units]
+    #     except KeyError:
+    #         raise Exception('Arrhenius A-factor units {0} not found among accepted units for converting to '
+    #                         'Cantera Arrhenius object.'.format(self._A.units))
+    #
+    #     b = self._n.value_si
+    #     E = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
+    #     if arrhenius_class:
+    #         return ct.Arrhenius(A, b, E)
+    #     else:
+    #         return ct.ArrheniusRate(A, b, E)
+    #
+    # def set_cantera_kinetics(self, ct_reaction, species_list):
+    #     """
+    #     Passes in a cantera Reaction() object and sets its
+    #     rate to a Cantera ArrheniusRate object.
+    #     """
+    #     import cantera as ct
+    #     assert isinstance(ct_reaction.rate, ct.ArrheniusRate), "Must have a Cantera ArrheniusRate attribute"
+    #
+    #     # Set the rate parameter to a cantera Arrhenius object
+    #     ct_reaction.rate = self.to_cantera_kinetics()
 
     cpdef ArrheniusEP to_arrhenius_ep(self, double alpha=0.0, double dHrxn=0.0):
         """
@@ -722,49 +722,49 @@ cdef class ArrheniusBM(KineticsModel):
         """
         self._A.value_si *= factor
 
-    def to_cantera_kinetics(self):
-        """
-        Converts the RMG ArrheniusBM object to a cantera BlowersMaselRate. 
-
-        BlowersMaselRate(A, b, Ea, W)  where A is in units of m^3/kmol/s, 
-        b is dimensionless, and Ea and W are in J/kmol
-        """
-        import cantera as ct
-
-        rate_units_conversion = {'1/s': 1,
-                                 's^-1': 1,
-                                 'm^3/(mol*s)': 1000,
-                                 'm^6/(mol^2*s)': 1000000,
-                                 'cm^3/(mol*s)': 1000,
-                                 'cm^6/(mol^2*s)': 1000000,
-                                 'm^3/(molecule*s)': 1000,
-                                 'm^6/(molecule^2*s)': 1000000,
-                                 'cm^3/(molecule*s)': 1000,
-                                 'cm^6/(molecule^2*s)': 1000000,
-                                 }
-
-        A = self._A.value_si
-
-        try:
-            A *= rate_units_conversion[self._A.units] # convert from /mol to /kmol
-        except KeyError:
-            raise ValueError(f'ArrheniusBM A-factor units {self._A.units} not found among accepted '
-                             'units for converting to Cantera BlowersMaselRate object.')
-
-        b = self._n.value_si
-        Ea = self._E0.value_si * 1000  # convert from J/mol to J/kmol
-        w = self._w0.value_si * 1000  # convert from J/mol to J/kmol
-
-        return ct.BlowersMaselRate(A, b, Ea, w)
-
-    def set_cantera_kinetics(self, ct_reaction, species_list):
-        """
-        Accepts a cantera Reaction object and sets its rate to a Cantera BlowersMaselRate object.
-        """
-        import cantera as ct
-        if not isinstance(ct_reaction.rate, ct.BlowersMaselRate):
-            raise TypeError("ct_reaction must have a cantera BlowersMaselRate as the rate attribute")
-        ct_reaction.rate = self.to_cantera_kinetics()
+    # def to_cantera_kinetics(self):
+    #     """
+    #     Converts the RMG ArrheniusBM object to a cantera BlowersMaselRate.
+    #
+    #     BlowersMaselRate(A, b, Ea, W)  where A is in units of m^3/kmol/s,
+    #     b is dimensionless, and Ea and W are in J/kmol
+    #     """
+    #     import cantera as ct
+    #
+    #     rate_units_conversion = {'1/s': 1,
+    #                              's^-1': 1,
+    #                              'm^3/(mol*s)': 1000,
+    #                              'm^6/(mol^2*s)': 1000000,
+    #                              'cm^3/(mol*s)': 1000,
+    #                              'cm^6/(mol^2*s)': 1000000,
+    #                              'm^3/(molecule*s)': 1000,
+    #                              'm^6/(molecule^2*s)': 1000000,
+    #                              'cm^3/(molecule*s)': 1000,
+    #                              'cm^6/(molecule^2*s)': 1000000,
+    #                              }
+    #
+    #     A = self._A.value_si
+    #
+    #     try:
+    #         A *= rate_units_conversion[self._A.units] # convert from /mol to /kmol
+    #     except KeyError:
+    #         raise ValueError(f'ArrheniusBM A-factor units {self._A.units} not found among accepted '
+    #                          'units for converting to Cantera BlowersMaselRate object.')
+    #
+    #     b = self._n.value_si
+    #     Ea = self._E0.value_si * 1000  # convert from J/mol to J/kmol
+    #     w = self._w0.value_si * 1000  # convert from J/mol to J/kmol
+    #
+    #     return ct.BlowersMaselRate(A, b, Ea, w)
+    #
+    # def set_cantera_kinetics(self, ct_reaction, species_list):
+    #     """
+    #     Accepts a cantera Reaction object and sets its rate to a Cantera BlowersMaselRate object.
+    #     """
+    #     import cantera as ct
+    #     if not isinstance(ct_reaction.rate, ct.BlowersMaselRate):
+    #         raise TypeError("ct_reaction must have a cantera BlowersMaselRate as the rate attribute")
+    #     ct_reaction.rate = self.to_cantera_kinetics()
 
 ################################################################################
 
@@ -914,20 +914,20 @@ cdef class PDepArrhenius(PDepKineticsModel):
         if self.highPlimit is not None:
             self.highPlimit.change_rate(factor)
 
-    def set_cantera_kinetics(self, ct_reaction, species_list):
-        """
-        Sets a Cantera PlogReaction()'s `rates` attribute with
-        A list of tuples containing [(pressure in Pa, cantera arrhenius object), (..)]
-        """
-        import cantera as ct
-        import copy
-        assert isinstance(ct_reaction.rate, ct.PlogRate), "Must have a Cantera PlogRate attribute"
-
-        pressures = copy.deepcopy(self._pressures.value_si)
-        ctArrhenius = [arr.to_cantera_kinetics(arrhenius_class=True) for arr in self.arrhenius]
-
-        new_rates = ct.PlogRate(list(zip(pressures, ctArrhenius)))
-        ct_reaction.rate = new_rates
+    # def set_cantera_kinetics(self, ct_reaction, species_list):
+    #     """
+    #     Sets a Cantera PlogReaction()'s `rates` attribute with
+    #     A list of tuples containing [(pressure in Pa, cantera arrhenius object), (..)]
+    #     """
+    #     import cantera as ct
+    #     import copy
+    #     assert isinstance(ct_reaction.rate, ct.PlogRate), "Must have a Cantera PlogRate attribute"
+    #
+    #     pressures = copy.deepcopy(self._pressures.value_si)
+    #     ctArrhenius = [arr.to_cantera_kinetics(arrhenius_class=True) for arr in self.arrhenius]
+    #
+    #     new_rates = ct.PlogRate(list(zip(pressures, ctArrhenius)))
+    #     ct_reaction.rate = new_rates
 
 ################################################################################
 
