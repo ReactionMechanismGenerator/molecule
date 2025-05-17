@@ -49,7 +49,7 @@ cdef class Reaction:
     cdef public KineticsModel kinetics
     cdef public Arrhenius network_kinetics
     cdef public SurfaceArrhenius
-    cdef public SurfaceChargeTransfer
+    # cdef public SurfaceChargeTransfer
     cdef public bint duplicate
     cdef public float _degeneracy
     cdef public int electrons
@@ -117,15 +117,13 @@ cdef class Reaction:
 
     cpdef fix_barrier_height(self, bint force_positive=?, str solvent=?, bint apply_solvation_correction=?)
 
-    cpdef reverse_arrhenius_rate(self, Arrhenius k_forward, str reverse_units, Tmin=?, Tmax=?)
+    # cpdef reverse_arrhenius_rate(self, Arrhenius k_forward, str reverse_units, Tmin=?, Tmax=?)
 
-    cpdef reverse_surface_arrhenius_rate(self, SurfaceArrhenius k_forward, str reverse_units, Tmin=?, Tmax=?)
+    # cpdef reverse_surface_arrhenius_rate(self, SurfaceArrhenius k_forward, str reverse_units, Tmin=?, Tmax=?)
 
-    cpdef reverse_sticking_coeff_rate(self, StickingCoefficient k_forward, str reverse_units, double surface_site_density, Tmin=?, Tmax=?)
+    # cpdef reverse_sticking_coeff_rate(self, StickingCoefficient k_forward, str reverse_units, double surface_site_density, Tmin=?, Tmax=?)
 
-    cpdef reverse_surface_charge_transfer_rate(self, SurfaceChargeTransfer k_forward, str reverse_units, Tmin=?, Tmax=?)
-
-    cpdef generate_reverse_rate_coefficient(self, bint network_kinetics=?, Tmin=?, Tmax=?, double surface_site_density=?)
+    # cpdef generate_reverse_rate_coefficient(self, bint network_kinetics=?, Tmin=?, Tmax=?, double surface_site_density=?)
 
     cpdef np.ndarray calculate_tst_rate_coefficients(self, np.ndarray Tlist)
 
@@ -133,9 +131,9 @@ cdef class Reaction:
 
     cpdef bint can_tst(self) except -2
 
-    cpdef calculate_microcanonical_rate_coefficient(self, np.ndarray e_list, np.ndarray j_list,
-                                                    np.ndarray reac_dens_states, np.ndarray prod_dens_states=?,
-                                                    double T=?)
+    # cpdef calculate_microcanonical_rate_coefficient(self, np.ndarray e_list, np.ndarray j_list,
+    #                                                 np.ndarray reac_dens_states, np.ndarray prod_dens_states=?,
+    #                                                 double T=?)
 
     cpdef bint is_balanced(self)
 
