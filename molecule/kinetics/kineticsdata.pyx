@@ -29,7 +29,7 @@
 
 import numpy as np
 cimport numpy as np
-from libc.math cimport log
+from libc.math cimport log, pow
 
 import molecule.quantity as quantity
 
@@ -115,12 +115,10 @@ cdef class KineticsData(KineticsModel):
             raise ValueError('Unable to compute rate coefficient at {0:g} K using KineticsData model.'.format(T))
         else:
             for i in range(N - 1):
-                Tlow = Tdata[i]
-                Thigh = Tdata[i + 1]
-                if Tlow <= T and T <= Thigh:
-                    klow = kdata[i]
-                    khigh = kdata[i + 1]
-                    k = klow * (khigh / klow) ** ((T - Tlow) / (Thigh - Tlow))
+                Tlow, Thigh = Tdata[i], Tdata[i + 1]
+                if Tlow <= T <= Thigh:
+                    klow, khigh = kdata[i], kdata[i + 1]
+                    k = klow * pow(khigh / klow, (T - Tlow) / (Thigh - Tlow))
                     break
         return k
 
@@ -213,48 +211,28 @@ cdef class PDepKineticsData(PDepKineticsModel):
         """
         cdef np.ndarray[np.float64_t, ndim=1] Tdata, Pdata
         cdef np.ndarray[np.float64_t, ndim=2] kdata
-        cdef double Tlow, Thigh, Plow, Phigh, klow, khigh
-        cdef double k
+        cdef double Tlow, Thigh, Plow, Phigh, klow, khigh, k
         cdef int i, j, M, N
 
         if P == 0:
             raise ValueError('No pressure specified to pressure-dependent PDepKineticsData.get_rate_coefficient().')
 
-        Tdata = self._Tdata.value_si
-        Pdata = self._Pdata.value_si
-        kdata = self._kdata.value_si
-        M = kdata.shape[0]
-        N = kdata.shape[1]
-        k = 0.0
+        Tdata, Pdata, kdata = self._Tdata.value_si, self._Pdata.value_si, self._kdata.value_si
+        M, N, k = kdata.shape[0], kdata.shape[1], 0.0
 
-        # Make sure we are interpolating and not extrapolating
-        if T < Tdata[0]:
-            raise ValueError(
-                'Unable to compute rate coefficient at {0:g} K and {1:g} Pa using PDepKineticsData model.'.format(T, P))
-        elif T > Tdata[M - 1]:
-            raise ValueError(
-                'Unable to compute rate coefficient at {0:g} K and {1:g} Pa using PDepKineticsData model.'.format(T, P))
-        if P < Pdata[0]:
-            raise ValueError(
-                'Unable to compute rate coefficient at {0:g} K and {1:g} Pa using PDepKineticsData model.'.format(T, P))
-        elif P > Pdata[N - 1]:
-            raise ValueError(
-                'Unable to compute rate coefficient at {0:g} K and {1:g} Pa using PDepKineticsData model.'.format(T, P))
-        else:
-            for i in range(M - 1):
-                Tlow = Tdata[i]
-                Thigh = Tdata[i + 1]
-                if Tlow <= T and T <= Thigh:
-                    for j in range(N - 1):
-                        Plow = Pdata[j]
-                        Phigh = Pdata[j + 1]
-                        if Plow <= P and P <= Phigh:
-                            klow = kdata[i, j] * (kdata[i + 1, j] / kdata[i, j]) ** ((T - Tlow) / (Thigh - Tlow))
-                            khigh = kdata[i, j + 1] * (kdata[i + 1, j + 1] / kdata[i, j + 1]) ** (
-                                        (T - Tlow) / (Thigh - Tlow))
-                            k = klow * (khigh / klow) ** (log(P / Plow) / log(Phigh / Plow))
-                            break
+        if not (Tdata[0] <= T <= Tdata[M - 1] and Pdata[0] <= P <= Pdata[N - 1]):
+            raise ValueError(f'Conditions ({T:g} K, {P:g} Pa) out of range.')
 
+        for i in range(M - 1):
+            Tlow, Thigh = Tdata[i], Tdata[i + 1]
+            if Tlow <= T <= Thigh:
+                for j in range(N - 1):
+                    Plow, Phigh = Pdata[j], Pdata[j + 1]
+                    if Plow <= P <= Phigh:
+                        klow = kdata[i, j] * pow(kdata[i + 1, j] / kdata[i, j], (T - Tlow) / (Thigh - Tlow))
+                        khigh = kdata[i, j + 1] * pow(kdata[i + 1, j + 1] / kdata[i, j + 1], (T - Tlow) / (Thigh - Tlow))
+                        k = klow * pow(khigh / klow, log(P / Plow) / log(Phigh / Plow))
+                        break
         return k
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
