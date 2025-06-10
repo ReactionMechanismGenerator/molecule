@@ -29,7 +29,7 @@
 
 import numpy as np
 cimport numpy as np
-from libc.math cimport log
+from libc.math cimport log, pow
 
 import molecule.quantity as quantity
 
@@ -115,12 +115,10 @@ cdef class KineticsData(KineticsModel):
             raise ValueError('Unable to compute rate coefficient at {0:g} K using KineticsData model.'.format(T))
         else:
             for i in range(N - 1):
-                Tlow = Tdata[i]
-                Thigh = Tdata[i + 1]
-                if Tlow <= T and T <= Thigh:
-                    klow = kdata[i]
-                    khigh = kdata[i + 1]
-                    k = klow * (khigh / klow) ** ((T - Tlow) / (Thigh - Tlow))
+                Tlow, Thigh = Tdata[i], Tdata[i + 1]
+                if Tlow <= T <= Thigh:
+                    klow, khigh = kdata[i], kdata[i + 1]
+                    k = klow * pow(khigh / klow, (T - Tlow) / (Thigh - Tlow))
                     break
         return k
 
@@ -208,54 +206,48 @@ cdef class PDepKineticsData(PDepKineticsModel):
 
     cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
         """
-        Return the rate coefficient in the appropriate combination of m^3, 
-        mol, and s at temperature `T` in K and pressure `P` in Pa. 
+        Return the rate coefficient in m^3, mol, and s at temperature T (K)
+        and pressure P (Pa).
         """
-        cdef np.ndarray[np.float64_t, ndim=1] Tdata, Pdata
-        cdef np.ndarray[np.float64_t, ndim=2] kdata
-        cdef double Tlow, Thigh, Plow, Phigh, klow, khigh
-        cdef double k
-        cdef int i, j, M, N
+        # Use C memoryviews so indexing yields raw C doubles
+        cdef double[:] Tview = self._Tdata.value_si
+        cdef double[:] Pview = self._Pdata.value_si
+        cdef double[:, :] Kview = self._kdata.value_si
+        cdef double Tlow, Thigh, Plow, Phigh, klow, khigh, kout = 0.0
+        cdef int i, j, M = Tview.shape[0], N = Pview.shape[0]
 
-        if P == 0:
-            raise ValueError('No pressure specified to pressure-dependent PDepKineticsData.get_rate_coefficient().')
+        if P == 0.0:
+            raise ValueError(
+                "No pressure specified to pressure-dependent get_rate_coefficient()."
+            )
+        if not (Tview[0] <= T <= Tview[M - 1] and Pview[0] <= P <= Pview[N - 1]):
+            raise ValueError(f"Conditions ({T:g} K, {P:g} Pa) out of range.")
 
-        Tdata = self._Tdata.value_si
-        Pdata = self._Pdata.value_si
-        kdata = self._kdata.value_si
-        M = kdata.shape[0]
-        N = kdata.shape[1]
-        k = 0.0
+        for i in range(M - 1):
+            Tlow = Tview[i]
+            Thigh = Tview[i + 1]
+            if Tlow <= T <= Thigh:
+                for j in range(N - 1):
+                    Plow = Pview[j]
+                    Phigh = Pview[j + 1]
+                    if Plow <= P <= Phigh:
+                        # interpolate in temperature
+                        klow = Kview[i, j] * pow(
+                            Kview[i + 1, j] / Kview[i, j],
+                            (T - Tlow) / (Thigh - Tlow),
+                        )
+                        khigh = Kview[i, j + 1] * pow(
+                            Kview[i + 1, j + 1] / Kview[i, j + 1],
+                            (T - Tlow) / (Thigh - Tlow),
+                        )
+                        # then interpolate in pressure
+                        kout = klow * pow(
+                            khigh / klow,
+                            log(P / Plow) / log(Phigh / Plow),
+                        )
+                        return kout
+        return kout
 
-        # Make sure we are interpolating and not extrapolating
-        if T < Tdata[0]:
-            raise ValueError(
-                'Unable to compute rate coefficient at {0:g} K and {1:g} Pa using PDepKineticsData model.'.format(T, P))
-        elif T > Tdata[M - 1]:
-            raise ValueError(
-                'Unable to compute rate coefficient at {0:g} K and {1:g} Pa using PDepKineticsData model.'.format(T, P))
-        if P < Pdata[0]:
-            raise ValueError(
-                'Unable to compute rate coefficient at {0:g} K and {1:g} Pa using PDepKineticsData model.'.format(T, P))
-        elif P > Pdata[N - 1]:
-            raise ValueError(
-                'Unable to compute rate coefficient at {0:g} K and {1:g} Pa using PDepKineticsData model.'.format(T, P))
-        else:
-            for i in range(M - 1):
-                Tlow = Tdata[i]
-                Thigh = Tdata[i + 1]
-                if Tlow <= T and T <= Thigh:
-                    for j in range(N - 1):
-                        Plow = Pdata[j]
-                        Phigh = Pdata[j + 1]
-                        if Plow <= P and P <= Phigh:
-                            klow = kdata[i, j] * (kdata[i + 1, j] / kdata[i, j]) ** ((T - Tlow) / (Thigh - Tlow))
-                            khigh = kdata[i, j + 1] * (kdata[i + 1, j + 1] / kdata[i, j + 1]) ** (
-                                        (T - Tlow) / (Thigh - Tlow))
-                            k = klow * (khigh / klow) ** (log(P / Plow) / log(Phigh / Plow))
-                            break
-
-        return k
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """

@@ -58,6 +58,7 @@ from molecule.molecule.element import bdes
 from molecule.molecule.graph import Vertex, Edge, Graph, get_vertex_connectivity_value
 from molecule.molecule.kekulize import kekulize
 from molecule.molecule.pathfinder import find_shortest_path
+from molecule.molecule.fragment import CuttingLabel
 
 ################################################################################
 
@@ -178,7 +179,7 @@ class Atom(Vertex):
 
     def __lt__(self, other):
         """Define less than comparison. For comparing against other Atom objects (e.g. when sorting)."""
-        if isinstance(other, Atom):
+        if issubclass(type(other), Vertex):
             return self.sorting_key < other.sorting_key
         else:
             raise NotImplementedError('Cannot perform less than comparison between Atom and '
@@ -186,7 +187,7 @@ class Atom(Vertex):
 
     def __gt__(self, other):
         """Define greater than comparison. For comparing against other Atom objects (e.g. when sorting)."""
-        if isinstance(other, Atom):
+        if issubclass(type(other), Vertex):
             return self.sorting_key > other.sorting_key
         else:
             raise NotImplementedError('Cannot perform greater than comparison between Atom and '
@@ -233,6 +234,7 @@ class Atom(Vertex):
                         and self.atomtype is atom.atomtype
                         and self.site == atom.site
                         and self.morphology == atom.morphology)
+
             else:
                 return self.element is atom.element
         elif isinstance(other, gr.GroupAtom):
@@ -352,6 +354,23 @@ class Atom(Vertex):
         a.id = self.id
         a.props = deepcopy(self.props)
         return a
+
+    def is_electron(self):
+        """
+        Return ``True`` if the atom represents an electron or ``False`` if
+        not.
+        """
+        return self.element.number == -1
+    
+    def is_proton(self):
+        """
+        Return ``True`` if the atom represents a proton or ``False`` if
+        not.
+        """
+
+        if self.element.number == 1 and self.charge == 1:
+            return True
+        return False
 
     def is_hydrogen(self):
         """
@@ -509,6 +528,18 @@ class Atom(Vertex):
             raise gr.ActionError('Unable to update Atom due to LOSE_RADICAL action: '
                                  'Invalid radical electron set "{0}".'.format(self.radical_electrons))
 
+    def increment_charge(self):
+        """
+        Update the atom pattern as a result of applying a GAIN_CHARGE action
+        """
+        self.charge += 1
+
+    def decrement_charge(self):
+        """
+        Update the atom pattern as a result of applying a LOSE_CHARGE action
+        """
+        self.charge -= 1
+
     def set_lone_pairs(self, lone_pairs):
         """
         Set the number of lone electron pairs.
@@ -550,6 +581,10 @@ class Atom(Vertex):
         if self.is_surface_site():
             self.charge = 0
             return
+        if self.is_electron():
+            self.charge = -1
+            return
+
         valence_electron = elements.PeriodicSystem.valence_electrons[self.symbol]
         order = self.get_total_bond_order()
         self.charge = valence_electron - order - self.radical_electrons - 2 * self.lone_pairs
@@ -572,6 +607,10 @@ class Atom(Vertex):
             for i in range(action[2]): self.increment_radical()
         elif act == 'LOSE_RADICAL':
             for i in range(abs(action[2])): self.decrement_radical()
+        elif act == 'GAIN_CHARGE':
+            for i in range(action[2]): self.increment_charge()
+        elif act == 'LOSE_CHARGE':
+            for i in range(abs(action[2])): self.decrement_charge()
         elif action[0].upper() == 'GAIN_PAIR':
             for i in range(action[2]): self.increment_lone_pairs()
         elif action[0].upper() == 'LOSE_PAIR':
@@ -843,6 +882,13 @@ class Bond(Edge):
         not.
         """
         return self.is_order(4)
+
+    def is_double_or_triple(self):
+        """
+        Return ``True`` if the bond represents a double or triple bond or ``False``
+        if not.
+        """
+        return self.is_order(2) or self.is_order(3)
 
     def is_benzene(self):
         """
@@ -1164,9 +1210,30 @@ class Molecule(Graph):
                 return True
         return False
 
+    def number_of_surface_sites(self):
+        """
+        Returns the number of surface sites in the molecule.
+        e.g. 2 for a bidentate adsorbate
+        """
+        cython.declare(atom=Atom)
+        cython.declare(count=cython.int)
+        count = 0
+        for atom in self.atoms:
+            if atom.is_surface_site():
+                count += 1
+        return count
+
     def is_surface_site(self):
         """Returns ``True`` iff the molecule is nothing but a surface site 'X'."""
         return len(self.atoms) == 1 and self.atoms[0].is_surface_site()
+
+    def is_electron(self):
+        """Returns ``True`` iff the molecule is nothing but an electron 'e'."""
+        return len(self.atoms) == 1 and self.atoms[0].is_electron()
+
+    def is_proton(self):
+        """Returns ``True`` iff the molecule is nothing but a proton 'H+'."""
+        return len(self.atoms) == 1 and self.atoms[0].is_proton()
 
     def remove_atom(self, atom):
         """
@@ -1214,17 +1281,22 @@ class Molecule(Graph):
         for index, vertex in enumerate(self.vertices):
             vertex.sorting_label = index
 
+    def update_charge(self):
+
+        for atom in self.atoms:
+            if not isinstance(atom, CuttingLabel):
+                atom.update_charge()
+
     def update(self, log_species=True, raise_atomtype_exception=True, sort_atoms=True):
         """
-        Update the charge and atom types of atoms.
+        Update the lone_pairs, charge, and atom types of atoms.
         Update multiplicity, and sort atoms (if ``sort_atoms`` is ``True``)
         Does not necessarily update the connectivity values (which are used in isomorphism checks)
         If you need that, call update_connectivity_values()
         """
 
-        for atom in self.atoms:
-            atom.update_charge()
-
+        self.update_lone_pairs()
+        self.update_charge()
         self.update_atomtypes(log_species=log_species, raise_exception=raise_atomtype_exception)
         self.update_multiplicity()
         if sort_atoms:
@@ -1764,9 +1836,13 @@ class Molecule(Graph):
         os.unlink(temp_file_name)
         return png
 
-    def from_inchi(self, inchistr, backend='try-all', raise_atomtype_exception=True):
+    def from_inchi(self, inchistr, backend='openbabel-first', raise_atomtype_exception=True):
         """
         Convert an InChI string `inchistr` to a molecular structure.
+
+        RDKit and Open Babel are the two backends used in RMG. It is possible to use a
+        single backend or try different backends in sequence. The available options for the ``backend``
+        argument: 'openbabel-first'(default), 'rdkit-first', 'rdkit', or 'openbabel'.
         """
         translator.from_inchi(self, inchistr, backend, raise_atomtype_exception=raise_atomtype_exception)
         return self
@@ -1778,9 +1854,13 @@ class Molecule(Graph):
         translator.from_augmented_inchi(self, aug_inchi, raise_atomtype_exception=raise_atomtype_exception)
         return self
 
-    def from_smiles(self, smilesstr, backend='try-all', raise_atomtype_exception=True):
+    def from_smiles(self, smilesstr, backend='openbabel-first', raise_atomtype_exception=True):
         """
         Convert a SMILES string `smilesstr` to a molecular structure.
+
+        RDKit and Open Babel are the two backends used in RMG. It is possible to use a
+        single backend or try different backends in sequence. The available options for the ``backend``
+        argument: 'openbabel-first'(default), 'rdkit-first', 'rdkit', or 'openbabel'.
         """
         translator.from_smiles(self, smilesstr, backend, raise_atomtype_exception=raise_atomtype_exception)
         return self
@@ -1795,7 +1875,7 @@ class Molecule(Graph):
         return self
 
     def from_adjacency_list(self, adjlist, saturate_h=False, raise_atomtype_exception=True,
-                            raise_charge_exception=True, check_consistency=True):
+                            raise_charge_exception=False, check_consistency=True):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.
         Skips the first line (assuming it's a label) unless `withLabel` is
@@ -1859,62 +1939,78 @@ class Molecule(Graph):
         new_mol.update_atomtypes(raise_exception=raise_atomtype_exception)
         return new_mol
 
-    def to_inchi(self):
+    def to_inchi(self, backend='rdkit-first'):
         """
         Convert a molecular structure to an InChI string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
         Perceives aromaticity.
-        
+
         or
-        
+
         Convert a molecular structure to an InChI string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+
+        It is possible to use a single backend or try different backends in sequence.
+        The available options for the ``backend`` argument: 'rdkit-first'(default),
+        'openbabel-first', 'rdkit', or 'openbabel'.
         """
         try:
-            return translator.to_inchi(self)
+            return translator.to_inchi(self, backend=backend)
         except:
             logging.exception(f"Error for molecule \n{self.to_adjacency_list()}")
             raise
 
-    def to_augmented_inchi(self):
+    def to_augmented_inchi(self, backend='rdkit-first'):
         """
         Adds an extra layer to the InChI denoting the multiplicity
         of the molecule.
-        
+
         Separate layer with a forward slash character.
+
+        RDKit and Open Babel are the two backends used in RMG. It is possible to use a
+        single backend or try different backends in sequence. The available options for the ``backend``
+        argument: 'rdkit-first'(default), 'openbabel-first', 'rdkit', or 'openbabel'.
         """
         try:
-            return translator.to_inchi(self, aug_level=2)
+            return translator.to_inchi(self, backend=backend, aug_level=2)
         except:
             logging.exception(f"Error for molecule \n{self.to_adjacency_list()}")
             raise
 
-    def to_inchi_key(self):
+    def to_inchi_key(self, backend='rdkit-first'):
         """
         Convert a molecular structure to an InChI Key string. Uses
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
-        
-        or 
-        
+
+        or
+
         Convert a molecular structure to an InChI Key string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
+
+        It is possible to use a single backend or try different backends in sequence.
+        The available options for the ``backend`` argument: 'rdkit-first'(default),
+        'openbabel-first', 'rdkit', or 'openbabel'.
         """
         try:
-            return translator.to_inchi_key(self)
+            return translator.to_inchi_key(self, backend=backend)
         except:
             logging.exception(f"Error for molecule \n{self.to_adjacency_list()}")
             raise
 
-    def to_augmented_inchi_key(self):
+    def to_augmented_inchi_key(self, backend='rdkit-first'):
         """
         Adds an extra layer to the InChIKey denoting the multiplicity
         of the molecule.
 
         Simply append the multiplicity string, do not separate by a
         character like forward slash.
+
+        RDKit and Open Babel are the two backends used in RMG. It is possible to use a
+        single backend or try different backends in sequence. The available options for the ``backend``
+        argument: 'rdkit-first'(default), 'openbabel-first', 'rdkit', or 'openbabel'.
         """
         try:
-            return translator.to_inchi_key(self, aug_level=2)
+            return translator.to_inchi_key(self, backend=backend, aug_level=2)
         except:
             logging.exception(f"Error for molecule \n{self.to_adjacency_list()}")
             raise
@@ -1976,7 +2072,7 @@ class Molecule(Graph):
         ONinds = [n for n, a in enumerate(self.atoms) if a.is_oxygen() or a.is_nitrogen()]
 
         for i, atm1 in enumerate(self.atoms):
-            if atm1.atomtype.label == 'H':
+            if atm1.atomtype.label == 'H0':
                 atm_covs = [q for q in atm1.bonds.keys()]
                 if len(atm_covs) > 1:  # H is already H bonded
                     continue
@@ -2239,10 +2335,15 @@ class Molecule(Graph):
 
     def generate_resonance_structures(self, keep_isomorphic=False, filter_structures=True, save_order=False):
         """Returns a list of resonance structures of the molecule."""
-        return resonance.generate_resonance_structures(self, keep_isomorphic=keep_isomorphic,
+
+        try:
+            return resonance.generate_resonance_structures(self, keep_isomorphic=keep_isomorphic,
                                                        filter_structures=filter_structures,
                                                        save_order=save_order,
                                                        )
+        except:
+            logging.warning("Resonance structure generation failed for {}".format(self))
+            return [self.copy(deep=True)]
 
     def get_url(self):
         """
@@ -2272,7 +2373,7 @@ class Molecule(Graph):
         """
         cython.declare(atom1=Atom, atom2=Atom, bond12=Bond, order=float)
         for atom1 in self.vertices:
-            if atom1.is_hydrogen() or atom1.is_surface_site() or atom1.is_lithium():
+            if atom1.is_hydrogen() or atom1.is_surface_site() or atom1.is_electron() or atom1.is_lithium():
                 atom1.lone_pairs = 0
             else:
                 order = atom1.get_total_bond_order()
@@ -2448,7 +2549,35 @@ class Molecule(Graph):
 
         if rings is None:
             rings = self.get_relevant_cycles()
-            rings = [ring for ring in rings if len(ring) == 6]
+
+        def filter_fused_rings(_rings):
+            """
+            Given a list of rings, remove ones which share more than 2 atoms.
+            """
+            cython.declare(toRemove=set, i=cython.int, j=cython.int, toRemoveSorted=list)
+
+            if len(_rings) < 2:
+                return _rings
+
+            to_remove = set()
+            for i, j in itertools.combinations(range(len(_rings)), 2):
+                if len(set(_rings[i]) & set(_rings[j])) > 2:
+                    to_remove.add(i)
+                    to_remove.add(j)
+
+            to_remove_sorted = sorted(to_remove, reverse=True)
+
+            for i in to_remove_sorted:
+                del _rings[i]
+
+            return _rings
+
+        # Remove rings that share more than 3 atoms, since they cannot be planar
+        rings = filter_fused_rings(rings)
+
+        # Only keep rings with exactly 6 atoms, since RMG can only handle aromatic benzene
+        rings = [ring for ring in rings if len(ring) == 6]
+
         if not rings:
             return [], []
 
@@ -2741,6 +2870,16 @@ class Molecule(Graph):
         """
         cython.declare(atom=Atom)
         return [atom for atom in self.atoms if atom.is_surface_site()]
+
+    def is_multidentate(self):
+        """
+        Return ``True`` if the adsorbate contains at least two binding sites,
+        or ``False`` otherwise.
+        """
+        cython.declare(atom=Atom)
+        if len([atom for atom in self.atoms if atom.is_surface_site()])>=2:
+            return True
+        return False
 
     def get_adatoms(self):
         """

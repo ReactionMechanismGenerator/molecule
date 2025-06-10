@@ -38,6 +38,8 @@ from libc.math cimport log10
 
 import molecule.quantity as quantity
 from molecule.molecule import Molecule
+from molecule.kinetics.surface import StickingCoefficient, StickingCoefficientBEP
+
 
 ################################################################################
 
@@ -117,16 +119,18 @@ cdef class KineticsModel:
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
     `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `solute`        Solute data for the transition state
     `comment`       Information about the model (e.g. its source)
     =============== ============================================================
 
     """
 
-    def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None, comment=''):
+    def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None, solute=None, comment=''):
         self.Tmin = Tmin
         self.Tmax = Tmax
         self.Pmin = Pmin
         self.Pmax = Pmax
+        self.solute = solute
         self.uncertainty = uncertainty
         self.comment = comment
 
@@ -135,14 +139,14 @@ cdef class KineticsModel:
         Return a string representation that can be used to reconstruct the
         KineticsModel object.
         """
-        return 'KineticsModel(Tmin={0!r}, Tmax={1!r}, Pmin={2!r}, Pmax={3!r}, uncertainty={4!r}, comment="""{5}""")'.format(
-            self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment)
+        return 'KineticsModel(Tmin={0!r}, Tmax={1!r}, Pmin={2!r}, Pmax={3!r}, uncertainty={4!r}, solute={5!r}, comment="""{6}""")'.format(
+            self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.solute, self.comment)
 
     def __reduce__(self):
         """
         A helper function used when pickling a KineticsModel object.
         """
-        return (KineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment))
+        return (KineticsModel, (self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.solute, self.comment))
 
     property Tmin:
         """The minimum temperature at which the model is valid, or ``None`` if not defined."""
@@ -196,6 +200,7 @@ cdef class KineticsModel:
         """
         raise NotImplementedError('Unexpected call to KineticsModel.get_rate_coefficient(); '
                                   'you should be using a class derived from KineticsModel.')
+    
 
     cpdef to_html(self):
         """
@@ -232,6 +237,9 @@ cdef class KineticsModel:
         cdef double T
 
         if other_kinetics.is_pressure_dependent():
+            return False
+
+        if isinstance(other_kinetics, (StickingCoefficient, StickingCoefficientBEP)):
             return False
 
         for T in [500, 1000, 1500, 2000]:
@@ -403,7 +411,7 @@ cdef class PDepKineticsModel(KineticsModel):
         cdef double eff
         cdef int i
 
-        all_efficiencies = np.ones(len(species), np.float64)
+        all_efficiencies = np.ones(len(species), float)
         for mol, eff in self.efficiencies.iteritems():
             for spec in species:
                 if spec.is_isomorphic(mol):
