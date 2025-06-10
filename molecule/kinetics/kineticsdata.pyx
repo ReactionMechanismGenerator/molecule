@@ -229,10 +229,21 @@ cdef class PDepKineticsData(PDepKineticsModel):
                 for j in range(N - 1):
                     Plow, Phigh = Pdata[j], Pdata[j + 1]
                     if Plow <= P <= Phigh:
-                        klow = kdata[i, j] * pow(kdata[i + 1, j] / kdata[i, j], (T - Tlow) / (Thigh - Tlow))
-                        khigh = kdata[i, j + 1] * pow(kdata[i + 1, j + 1] / kdata[i, j + 1], (T - Tlow) / (Thigh - Tlow))
-                        k = klow * pow(khigh / klow, log(P / Plow) / log(Phigh / Plow))
-                        break
+                        # temperature interpolation (real double pow)
+                        klow = (<double> kdata[i, j]) * pow(
+                            (<double> kdata[i + 1, j]) / (<double> kdata[i, j]),
+                            (T - Tlow) / (Thigh - Tlow)
+                        )
+                        khigh = (<double> kdata[i, j + 1]) * pow(
+                            (<double> kdata[i + 1, j + 1]) / (<double> kdata[i, j + 1]),
+                            (T - Tlow) / (Thigh - Tlow)
+                        )
+                        # pressure interpolation (log-linear, real double pow/log)
+                        k = klow * pow(
+                            khigh / klow,
+                            log(P / Plow) / log(Phigh / Plow)
+                        )
+                        return k
         return k
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
