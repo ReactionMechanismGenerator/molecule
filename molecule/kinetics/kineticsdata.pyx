@@ -206,45 +206,48 @@ cdef class PDepKineticsData(PDepKineticsModel):
 
     cpdef double get_rate_coefficient(self, double T, double P=0.0) except -1:
         """
-        Return the rate coefficient in the appropriate combination of m^3, 
-        mol, and s at temperature `T` in K and pressure `P` in Pa. 
+        Return the rate coefficient in m^3, mol, and s at temperature T (K)
+        and pressure P (Pa).
         """
-        cdef np.ndarray[np.float64_t, ndim=1] Tdata, Pdata
-        cdef np.ndarray[np.float64_t, ndim=2] kdata
-        cdef double Tlow, Thigh, Plow, Phigh, klow, khigh, k
-        cdef int i, j, M, N
+        # Use C memoryviews so indexing yields raw C doubles
+        cdef double[:] Tview = self._Tdata.value_si
+        cdef double[:] Pview = self._Pdata.value_si
+        cdef double[:, :] Kview = self._kdata.value_si
+        cdef double Tlow, Thigh, Plow, Phigh, klow, khigh, kout = 0.0
+        cdef int i, j, M = Tview.shape[0], N = Pview.shape[0]
 
-        if P == 0:
-            raise ValueError('No pressure specified to pressure-dependent PDepKineticsData.get_rate_coefficient().')
-
-        Tdata, Pdata, kdata = self._Tdata.value_si, self._Pdata.value_si, self._kdata.value_si
-        M, N, k = kdata.shape[0], kdata.shape[1], 0.0
-
-        if not (Tdata[0] <= T <= Tdata[M - 1] and Pdata[0] <= P <= Pdata[N - 1]):
-            raise ValueError(f'Conditions ({T:g} K, {P:g} Pa) out of range.')
+        if P == 0.0:
+            raise ValueError(
+                "No pressure specified to pressure-dependent get_rate_coefficient()."
+            )
+        if not (Tview[0] <= T <= Tview[M - 1] and Pview[0] <= P <= Pview[N - 1]):
+            raise ValueError(f"Conditions ({T:g} K, {P:g} Pa) out of range.")
 
         for i in range(M - 1):
-            Tlow, Thigh = Tdata[i], Tdata[i + 1]
+            Tlow = Tview[i]
+            Thigh = Tview[i + 1]
             if Tlow <= T <= Thigh:
                 for j in range(N - 1):
-                    Plow, Phigh = Pdata[j], Pdata[j + 1]
+                    Plow = Pview[j]
+                    Phigh = Pview[j + 1]
                     if Plow <= P <= Phigh:
-                        # temperature interpolation (real double pow)
-                        klow = (<double> kdata[i, j]) * pow(
-                            (<double> kdata[i + 1, j]) / (<double> kdata[i, j]),
-                            (T - Tlow) / (Thigh - Tlow)
+                        # interpolate in temperature
+                        klow = Kview[i, j] * pow(
+                            Kview[i + 1, j] / Kview[i, j],
+                            (T - Tlow) / (Thigh - Tlow),
                         )
-                        khigh = (<double> kdata[i, j + 1]) * pow(
-                            (<double> kdata[i + 1, j + 1]) / (<double> kdata[i, j + 1]),
-                            (T - Tlow) / (Thigh - Tlow)
+                        khigh = Kview[i, j + 1] * pow(
+                            Kview[i + 1, j + 1] / Kview[i, j + 1],
+                            (T - Tlow) / (Thigh - Tlow),
                         )
-                        # pressure interpolation (log-linear, real double pow/log)
-                        k = klow * pow(
+                        # then interpolate in pressure
+                        kout = klow * pow(
                             khigh / klow,
-                            log(P / Plow) / log(Phigh / Plow)
+                            log(P / Plow) / log(Phigh / Plow),
                         )
-                        return k
-        return k
+                        return kout
+        return kout
+
 
     cpdef bint is_identical_to(self, KineticsModel other_kinetics) except -2:
         """
