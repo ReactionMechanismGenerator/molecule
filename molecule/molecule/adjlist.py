@@ -753,6 +753,22 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False, check_consistenc
                     morphologies.append(m[1:-1])
                 index += 1
         
+        props = {}
+
+        # Next the coordination numbers (if provided)
+        coords = []
+        if len(data) > index:
+            n_state = data[index]
+            if n_state[0] == 'n':
+                if n_state[1] == '[':
+                    n_state = n_state[2:-1].split(',')
+                else:
+                    n_state = [n_state[1:]]
+                for n in n_state:
+                    coords.append(int(n))
+                props['Ncoord'] = coords
+                index += 1
+        
         # Next the isotope (if provided)
         isotope = -1
         if len(data) > index:
@@ -762,7 +778,6 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False, check_consistenc
                 index += 1
 
         # Next ring membership info (if provided)
-        props = {}
         if len(data) > index:
             r_state = data[index]
             if r_state[0] == 'r':
@@ -943,6 +958,7 @@ def to_adjacency_list(atoms, multiplicity, metal='', facet='', label=None, group
     atom_props = {}
     atom_site = {}
     atom_morphology = {}
+    atom_ncoord = {}
     if group:
         for atom in atom_numbers:
             # Atom type(s)
@@ -989,6 +1005,16 @@ def to_adjacency_list(atoms, multiplicity, metal='', facet='', label=None, group
                 atom_morphology[atom] = None  # Empty list indicates wildcard
             else:
                 atom_morphology[atom] = '["{0}"]'.format('","'.join(s for s in atom.morphology))
+            
+            # Coordination Number
+            if "Ncoord" not in atom.props.keys():
+                atom_ncoord[atom] = None
+            elif len(atom.props["Ncoord"]) == 1:
+                atom_ncoord[atom] = atom.props["Ncoord"][0]
+            elif len(atom.props["Ncoord"]) == 0:
+                atom_ncoord[atom] = []
+            else:
+                atom_ncoord[atom] = '[{0}]'.format(','.join(str(s) for s in atom.props["Ncoord"]))
                 
             # Isotopes
             atom_isotope[atom] = -1
@@ -1058,6 +1084,9 @@ def to_adjacency_list(atoms, multiplicity, metal='', facet='', label=None, group
         # Morphologies
         if atom_morphology[atom]:
             adjlist += ' m{0}'.format(atom_morphology[atom])
+        if group and atom_ncoord[atom] is not None and (isinstance(atom_ncoord[atom],int) or len(atom_ncoord[atom]) > 0):
+            if atom_ncoord[atom]:
+                adjlist += ' n{0}'.format(atom_ncoord[atom])
         # Isotopes
         if atom_isotope[atom] != -1:
             adjlist += ' i{0}'.format(atom_isotope[atom])

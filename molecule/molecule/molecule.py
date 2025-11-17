@@ -270,6 +270,9 @@ class Atom(Vertex):
                     if self.morphology == morphology: break
                 else:
                     return False
+            if 'Ncoord' in self.props and 'Ncoord' in ap.props:
+                if self.props['Ncoord'] != ap.props['Ncoord']:
+                    return False
             if 'inRing' in self.props and 'inRing' in ap.props:
                 if self.props['inRing'] != ap.props['inRing']:
                     return False
@@ -323,6 +326,13 @@ class Atom(Vertex):
                     if self.morphology == morphology: break
                 else:
                     return False
+            if 'Ncoord' in self.props and 'Ncoord' in atom.props:
+                for cn in atom.props['Ncoord']:
+                    if self.props['Ncoord'] == cn: break
+                else:
+                    return False
+            elif 'Ncoord' not in self.props and 'Ncoord' in atom.props:
+                return False
             if 'inRing' in self.props and 'inRing' in atom.props:
                 if self.props['inRing'] != atom.props['inRing']:
                     return False
@@ -1230,6 +1240,9 @@ class Molecule(Graph):
         if sort_atoms:
             self.sort_atoms()
         self.identify_ring_membership()
+        
+        for atom in self.atoms:
+            atom.props['Ncoord'] = len(atom.bonds)
 
     def get_formula(self):
         """
@@ -1449,11 +1462,11 @@ class Molecule(Graph):
             try:
                 atom.atomtype = get_atomtype(atom, atom.edges)
             except AtomTypeError:
-                if log_species:
+                if log_species and raise_exception:
                     logging.error("Could not update atomtypes for this molecule:\n{0}".format(self.to_adjacency_list()))
                 if raise_exception:
                     raise
-                atom.atomtype = ATOMTYPES['R']
+                atom.atomtype = ATOMTYPES['Rx']
 
     def update_multiplicity(self):
         """
@@ -1807,7 +1820,10 @@ class Molecule(Graph):
                                                                check_consistency=check_consistency)
         self.update_atomtypes(raise_exception=raise_atomtype_exception)
         self.identify_ring_membership()
-
+        
+        for atom in self.atoms:
+            atom.props['Ncoord'] = len(atom.bonds)
+            
         # Check if multiplicity is possible
         n_rad = self.get_radical_count()
         multiplicity = self.multiplicity
@@ -2272,7 +2288,7 @@ class Molecule(Graph):
         """
         cython.declare(atom1=Atom, atom2=Atom, bond12=Bond, order=float)
         for atom1 in self.vertices:
-            if atom1.is_hydrogen() or atom1.is_surface_site() or atom1.is_lithium():
+            if atom1.is_hydrogen() or atom1.is_surface_site() or atom1.is_lithium() or atom1.symbol not in elements.PeriodicSystem.valence_electrons:
                 atom1.lone_pairs = 0
             else:
                 order = atom1.get_total_bond_order()
@@ -2375,7 +2391,7 @@ class Molecule(Graph):
                                              label=atom.label,
                                              site=[atom.site] if atom.site else [],
                                              morphology=[atom.morphology] if atom.morphology else [],
-                                             )
+                                             props={k:(v if isinstance(v,bool) else [v]) for k,v in atom.props.items()})
 
         group = gr.Group(atoms=list(group_atoms.values()), multiplicity=[self.multiplicity], metal=[self.metal] if self.metal else [],
                          facet=[self.facet] if self.facet else [])

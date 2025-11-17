@@ -47,6 +47,7 @@ cdef class GroupAtom(Vertex):
     cdef public list reg_dim_r
     cdef public list reg_dim_site
     cdef public list reg_dim_morphology
+    cdef public list reg_dim_ncoord
     
     cpdef Vertex copy(self)
 

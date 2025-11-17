@@ -71,6 +71,7 @@ class GroupAtom(Vertex):
     `reg_dim_r`          ``list``            List of inRing values that are free dimensions in tree optimization
     `reg_dim_site`       ``list``            List of sites that are free dimensions in tree optimization
     `reg_dim_morphology` ``list``            List of morphologies that are free dimensions in tree optimization
+    `reg_dim_ncoord`.    ``list``            List of coordination numbers that are free dimensions in tree optimization
     ==================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
@@ -100,6 +101,7 @@ class GroupAtom(Vertex):
         self.reg_dim_r = [[], []]
         self.reg_dim_site = [[], []]
         self.reg_dim_morphology = [[], []]
+        self.reg_dim_ncoord = [[],[]]
 
     def __reduce__(self):
         """
@@ -442,6 +444,12 @@ class GroupAtom(Vertex):
                 else:
                     return False
         # Other properties must have an equivalent in other (and vice versa)
+        if 'Ncoord' in self.props and 'Ncoord' in group.props:
+            for cn in self.props['Ncoord']:
+                for cn2 in group.props['Ncoord']:
+                    if cn == cn2: break
+                else:
+                    return False
         # Absence of the 'inRing' prop indicates a wildcard
         if 'inRing' in self.props and 'inRing' in group.props:
             if self.props['inRing'] != group.props['inRing']:
@@ -522,6 +530,15 @@ class GroupAtom(Vertex):
                         return False
         else:
             if group.morphology: return False
+        
+        if 'Ncoord' in self.props and 'Ncoord' in group.props:
+            for cn in self.props['Ncoord']:
+                for cn2 in group.props['Ncoord']:
+                    if cn == cn2: break
+                else:
+                    return False
+        elif 'Ncoord' not in self.props and 'Ncoord' in group.props:
+            return False
         # Other properties must have an equivalent in other
         # Absence of the 'inRing' prop indicates a wildcard
         if 'inRing' in self.props and 'inRing' in group.props:
@@ -1172,7 +1189,9 @@ class Group(Graph):
         for index, atom in enumerate(self.atoms):
             atom_type = '{0!s} {1!s} '.format(index+1, atom.label if atom.label != '' else '')
             atom_type += ','.join([at.label for at in atom.atomtype])
-            atom_type = '"' + atom_type + '"'
+            if len(atom.radical_electrons) == 1 and atom.radical_electrons[0] == 1:
+                atom_type += '·'
+            atom_type = '"' + atom_type + '"'	
             graph.add_node(pydot.Node(name=str(index + 1), label=atom_type, fontname="Helvetica", fontsize="16"))
         for atom1 in self.atoms:
             for atom2, bond in atom1.bonds.items():
@@ -1401,6 +1420,7 @@ class Group(Graph):
             atm.reg_dim_r = [[], []]
             atm.reg_dim_site = [[],[]]
             atm.reg_dim_morphology = [[],[]]
+            atm.reg_dim_ncoord = [[],[]]
         for bd in self.get_all_edges():
             bd.reg_dim = [[], []]
 

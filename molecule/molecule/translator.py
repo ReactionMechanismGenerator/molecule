@@ -517,6 +517,9 @@ def _read(mol, identifier, identifier_type, backend, raise_atomtype_exception=Tr
         else:
             raise NotImplementedError("Unrecognized backend {0}".format(option))
 
+        for atom in mol.atoms:
+            atom.props['Ncoord'] = len(atom.bonds)
+            
         if _check_output(mol, identifier):
             mol.update_atomtypes(log_species=True, raise_exception=raise_atomtype_exception)
             return mol
