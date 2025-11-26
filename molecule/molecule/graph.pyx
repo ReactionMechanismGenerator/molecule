@@ -515,7 +515,7 @@ cdef class Graph(object):
         if generate_initial_map:
             initial_map = dict()
             for atom in self.vertices:
-                if atom.label and atom.label != '':
+                if atom.label and atom.label != '' and atom.label != "*S":
                     for a in other.vertices:
                         if a.label == atom.label:
                             initial_map[atom] = a

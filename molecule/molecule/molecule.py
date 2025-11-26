@@ -232,7 +232,8 @@ class Atom(Vertex):
                         and self.charge == atom.charge
                         and self.atomtype is atom.atomtype
                         and self.site == atom.site
-                        and self.morphology == atom.morphology)
+                        and self.morphology == atom.morphology
+                        and self.label == atom.label)
             else:
                 return self.element is atom.element
         elif isinstance(other, gr.GroupAtom):
@@ -270,6 +271,8 @@ class Atom(Vertex):
                     if self.morphology == morphology: break
                 else:
                     return False
+            if ap.label != self.label:
+                return False
             if 'Ncoord' in self.props and 'Ncoord' in ap.props:
                 if self.props['Ncoord'] != ap.props['Ncoord']:
                     return False
@@ -326,6 +329,8 @@ class Atom(Vertex):
                     if self.morphology == morphology: break
                 else:
                     return False
+            if atom.label != self.label:
+                return False
             if 'Ncoord' in self.props and 'Ncoord' in atom.props:
                 for cn in atom.props['Ncoord']:
                     if self.props['Ncoord'] == cn: break
@@ -1664,7 +1669,7 @@ class Molecule(Graph):
             atms = []
             initial_map = dict()
             for atom in self.atoms:
-                if atom.label and atom.label != '':
+                if atom.label and atom.label != '' and atom.label != "*S":
                     L = [a for a in other.atoms if a.label == atom.label]
                     if L == []:
                         return False

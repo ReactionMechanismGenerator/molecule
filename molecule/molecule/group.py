@@ -443,6 +443,8 @@ class GroupAtom(Vertex):
                     if morphology1 == morphology2: break
                 else:
                     return False
+        if self.label != group.label:
+            return False
         # Other properties must have an equivalent in other (and vice versa)
         if 'Ncoord' in self.props and 'Ncoord' in group.props:
             for cn in self.props['Ncoord']:
@@ -530,7 +532,8 @@ class GroupAtom(Vertex):
                         return False
         else:
             if group.morphology: return False
-        
+        if self.label != group.label:
+            return False
         if 'Ncoord' in self.props and 'Ncoord' in group.props:
             for cn in self.props['Ncoord']:
                 for cn2 in group.props['Ncoord']:
@@ -1982,7 +1985,7 @@ class Group(Graph):
             atms = []
             initial_map = dict()
             for atom in self.atoms:
-                if atom.label and atom.label != '':
+                if atom.label and atom.label != '' and atom.label != "*S":
                     L = [a for a in other.atoms if a.label == atom.label]
                     if L == []:
                         return False
