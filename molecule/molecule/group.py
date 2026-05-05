@@ -102,6 +102,7 @@ class GroupAtom(Vertex):
         self.reg_dim_site = [[], []]
         self.reg_dim_morphology = [[], []]
         self.reg_dim_ncoord = [[],[]]
+        self.reg_dim_p = [[],[]]
 
     def __reduce__(self):
         """
@@ -1424,6 +1425,7 @@ class Group(Graph):
             atm.reg_dim_site = [[],[]]
             atm.reg_dim_morphology = [[],[]]
             atm.reg_dim_ncoord = [[],[]]
+            atm.reg_dim_p = [[],[]]
         for bd in self.get_all_edges():
             bd.reg_dim = [[], []]
 
