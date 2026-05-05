@@ -1665,6 +1665,9 @@ class Molecule(Graph):
                 return False
 
         if generate_initial_map:
+            #check Molecule and group have same numbers of each label
+            if sorted([a.label for a in self.atoms if a.label != '' and a.label != "*S"]) != sorted([a.label for a in other.atoms if a.label != '' and a.label != "*S"]):
+                return False
             keys = []
             atms = []
             initial_map = dict()
