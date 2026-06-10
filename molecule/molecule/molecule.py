@@ -213,14 +213,15 @@ class Atom(Vertex):
         """Returns a sorting key for comparing Atom objects. Read-only"""
         return self.number, -get_vertex_connectivity_value(self), self.radical_electrons, self.lone_pairs, self.charge
 
-    def equivalent(self, other, strict=True):
+    def equivalent(self, other, strict=True, check_labels=False):
         """
         Return ``True`` if `other` is indistinguishable from this atom, or
         ``False`` otherwise. If `other` is an :class:`Atom` object, then all
-        attributes except `label` and 'ID' must match exactly. If `other` is an
-        :class:`GroupAtom` object, then the atom must match any of the
-        combinations in the atom pattern. If ``strict`` is ``False``, then only
-        the element is compared and electrons are ignored.
+        attributes except `label` and 'ID' must match exactly unless
+        ``check_labels`` is ``True``. If `other` is an :class:`GroupAtom`
+        object, then the atom must match any of the combinations in the atom
+        pattern. If ``strict`` is ``False``, then only the element is compared
+        and electrons are ignored.
         """
         cython.declare(atom=Atom, ap=gr.GroupAtom)
         if isinstance(other, Atom):
@@ -233,7 +234,7 @@ class Atom(Vertex):
                         and self.atomtype is atom.atomtype
                         and self.site == atom.site
                         and self.morphology == atom.morphology
-                        and self.label == atom.label)
+                        and (not check_labels or self.label == atom.label))
             else:
                 return self.element is atom.element
         elif isinstance(other, gr.GroupAtom):
@@ -271,7 +272,7 @@ class Atom(Vertex):
                     if self.morphology == morphology: break
                 else:
                     return False
-            if ap.label != self.label:
+            if check_labels and ap.label != self.label:
                 return False
             if 'Ncoord' in self.props and 'Ncoord' in ap.props:
                 if self.props['Ncoord'] != ap.props['Ncoord']:
@@ -281,7 +282,7 @@ class Atom(Vertex):
                     return False
             return True
 
-    def is_specific_case_of(self, other):
+    def is_specific_case_of(self, other, check_labels=False):
         """
         Return ``True`` if `self` is a specific case of `other`, or ``False``
         otherwise. If `other` is an :class:`Atom` object, then this is the same
@@ -290,7 +291,7 @@ class Atom(Vertex):
         specific than any of the combinations in the atom pattern.
         """
         if isinstance(other, Atom):
-            return self.equivalent(other)
+            return self.equivalent(other, check_labels=check_labels)
         elif isinstance(other, gr.GroupAtom):
             cython.declare(atom=gr.GroupAtom, a=AtomType, radical=cython.short, lp=cython.short, charge=cython.short)
             atom = other
@@ -329,7 +330,7 @@ class Atom(Vertex):
                     if self.morphology == morphology: break
                 else:
                     return False
-            if atom.label != self.label:
+            if check_labels and atom.label != self.label:
                 return False
             if 'Ncoord' in self.props and 'Ncoord' in atom.props:
                 for cn in atom.props['Ncoord']:

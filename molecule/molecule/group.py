@@ -354,12 +354,13 @@ class GroupAtom(Vertex):
         else:
             raise ActionError('Unable to update GroupAtom: Invalid action {0}".'.format(action))
 
-    def equivalent(self, other, strict=True):
+    def equivalent(self, other, strict=True, check_labels=False):
         """
         Returns ``True`` if `other` is equivalent to `self` or ``False`` if not,
         where `other` can be either an :class:`Atom` or an :class:`GroupAtom`
         object. When comparing two :class:`GroupAtom` objects, this function
-        respects wildcards, e.g. ``R!H`` is equivalent to ``C``.
+        respects wildcards, e.g. ``R!H`` is equivalent to ``C``. If
+        ``check_labels`` is ``True``, then atom labels must also match.
         
         """
         cython.declare(group=GroupAtom)
@@ -369,7 +370,7 @@ class GroupAtom(Vertex):
             # Let the equivalent method of other handle it
             # We expect self to be an Atom object, but can't test for it here
             # because that would create an import cycle
-            return other.equivalent(self)
+            return other.equivalent(self, check_labels=check_labels)
         group = other
 
         cython.declare(atomType1=AtomType, atomtype2=AtomType, radical1=cython.short, radical2=cython.short,
@@ -444,7 +445,7 @@ class GroupAtom(Vertex):
                     if morphology1 == morphology2: break
                 else:
                     return False
-        if self.label != group.label:
+        if check_labels and self.label != group.label:
             return False
         # Other properties must have an equivalent in other (and vice versa)
         if 'Ncoord' in self.props and 'Ncoord' in group.props:
@@ -460,18 +461,19 @@ class GroupAtom(Vertex):
         # Otherwise the two atom groups are equivalent
         return True
 
-    def is_specific_case_of(self, other):
+    def is_specific_case_of(self, other, check_labels=False):
         """
         Returns ``True`` if `self` is the same as `other` or is a more
         specific case of `other`. Returns ``False`` if some of `self` is not
-        included in `other` or they are mutually exclusive. 
+        included in `other` or they are mutually exclusive. If ``check_labels``
+        is ``True``, then atom labels must also be compatible.
         """
         cython.declare(group=GroupAtom)
         if not isinstance(other, GroupAtom):
             # Let the is_specific_case_of method of other handle it
             # We expect self to be an Atom object, but can't test for it here
             # because that would create an import cycle
-            return other.is_specific_case_of(self)
+            return other.is_specific_case_of(self, check_labels=check_labels)
         group = other
 
         cython.declare(atomType1=AtomType, atomtype2=AtomType, radical1=cython.short, radical2=cython.short,
@@ -533,7 +535,7 @@ class GroupAtom(Vertex):
                         return False
         else:
             if group.morphology: return False
-        if self.label != group.label:
+        if check_labels and self.label != group.label:
             return False
         if 'Ncoord' in self.props and 'Ncoord' in group.props:
             for cn in self.props['Ncoord']:
@@ -553,10 +555,10 @@ class GroupAtom(Vertex):
         # Otherwise self is in fact a specific case of other
         return True
     
-    def has_intersection_with(self, other):
+    def has_intersection_with(self, other, check_labels=False):
         """
         Returns ``True`` if `self` and `other` could correspond to the same realized atom
-        ``False`` if not
+        ``False`` if not. If ``check_labels`` is ``True``, then labels must also match.
         """
         cython.declare(group=GroupAtom)
         group = other
@@ -596,7 +598,7 @@ class GroupAtom(Vertex):
             if set(self.morphology).isdisjoint(group.morphology):
                 return False
 
-        if self.label != group.label: #no intersection if different labels
+        if check_labels and self.label != group.label: #no intersection if different labels
             return False
         
         if 'Ncoord' in self.props and 'Ncoord' in group.props:
