@@ -334,6 +334,24 @@ class TestGroupAtom(unittest.TestCase):
                     self.assertFalse(atom1gen.is_specific_case_of(atom2),
                                      '{0!s} is a specific case of {1!s}'.format(atom1gen, atom2))
 
+    def test_equivalent_with_check_labels(self):
+        atom1 = GroupAtom(atomtype=[ATOMTYPES['C']], radical_electrons=[1], charge=[0], label='*1', lone_pairs=[0])
+        atom2 = GroupAtom(atomtype=[ATOMTYPES['C']], radical_electrons=[1], charge=[0], label='*2', lone_pairs=[0])
+        self.assertTrue(atom1.equivalent(atom2))
+        self.assertFalse(atom1.equivalent(atom2, check_labels=True))
+
+    def test_is_specific_case_of_with_check_labels(self):
+        atom1 = GroupAtom(atomtype=[ATOMTYPES['C']], radical_electrons=[1], charge=[0], label='*1', lone_pairs=[0])
+        atom2 = GroupAtom(atomtype=[ATOMTYPES['C']], radical_electrons=[1], charge=[0], label='*2', lone_pairs=[0])
+        self.assertTrue(atom1.is_specific_case_of(atom2))
+        self.assertFalse(atom1.is_specific_case_of(atom2, check_labels=True))
+
+    def test_has_intersection_with_check_labels(self):
+        atom1 = GroupAtom(atomtype=[ATOMTYPES['C']], radical_electrons=[1], charge=[0], label='*1', lone_pairs=[0])
+        atom2 = GroupAtom(atomtype=[ATOMTYPES['C']], radical_electrons=[1], charge=[0], label='*2', lone_pairs=[0])
+        self.assertTrue(atom1.has_intersection_with(atom2))
+        self.assertFalse(atom1.has_intersection_with(atom2, check_labels=True))
+
     def test_copy(self):
         """
         Test the GroupAtom.copy() method.

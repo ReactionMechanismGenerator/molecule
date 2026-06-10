@@ -420,6 +420,18 @@ class TestAtom(unittest.TestCase):
                 else:
                     self.assertFalse(atom1.is_specific_case_of(atom2))
 
+    def test_equivalent_with_check_labels(self):
+        atom1 = Atom(element=element_list[0], radical_electrons=1, charge=0, label='*1', lone_pairs=0)
+        atom2 = Atom(element=element_list[0], radical_electrons=1, charge=0, label='*2', lone_pairs=0)
+        self.assertTrue(atom1.equivalent(atom2))
+        self.assertFalse(atom1.equivalent(atom2, check_labels=True))
+
+    def test_is_specific_case_of_with_check_labels(self):
+        atom1 = Atom(element=element_list[0], radical_electrons=1, charge=0, label='*1', lone_pairs=0)
+        atom2 = Atom(element=element_list[0], radical_electrons=1, charge=0, label='*2', lone_pairs=0)
+        self.assertTrue(atom1.is_specific_case_of(atom2))
+        self.assertFalse(atom1.is_specific_case_of(atom2, check_labels=True))
+
     def test_copy(self):
         """
         Test the Atom.copy() method.
