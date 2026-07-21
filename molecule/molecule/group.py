@@ -363,6 +363,8 @@ class GroupAtom(Vertex):
         
         """
         cython.declare(group=GroupAtom)
+        if self.label != other.label:
+            return False
         if not strict:
             raise NotImplementedError('There is currently no implementation of the strict argument for Group objects.')
         if not isinstance(other, GroupAtom):
@@ -467,6 +469,8 @@ class GroupAtom(Vertex):
         included in `other` or they are mutually exclusive. 
         """
         cython.declare(group=GroupAtom)
+        if self.label != other.label:
+            return False
         if not isinstance(other, GroupAtom):
             # Let the is_specific_case_of method of other handle it
             # We expect self to be an Atom object, but can't test for it here
