@@ -49,20 +49,23 @@ class CuttingLabel(Vertex):
     @property
     def bonds(self): return self.edges
 
-    def is_specific_case_of(self, other):
+    def is_specific_case_of(self, other, check_labels=False):
         """
         Return ``True`` if `self` is a specific case of `other`, or ``False``
         otherwise. At this moment, this is the same as the :math:`equivalent()`.
         """
-        return self.equivalent(other)
+        return self.equivalent(other, check_labels=check_labels)
 
-    def equivalent(self, other, strict=True):
+    def equivalent(self, other, strict=True, check_labels=False):
         """
         Return ``True`` if `other` is indistinguishable from this CuttingLabel, or
         ``False`` otherwise. If `other` is an :class:`CuttingLabel` object, then all
-        attributes must match exactly. 
+        attributes must match exactly. If ``check_labels`` is ``True``, the
+        `label` attributes must also match.
         """
         if isinstance(other, CuttingLabel):
+            if check_labels and self.label != other.label:
+                return False
             return self.name == other.name
         else:
             return False
@@ -559,7 +562,7 @@ class Fragment(Graph):
             return smiles
         return new_smi
 
-    def is_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False, strict=True):
+    def is_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False, strict=True, check_labels=False):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. The `initial_map` attribute can be used to specify a required
@@ -573,6 +576,7 @@ class Fragment(Graph):
             generate_initial_map (bool, optional): if ``True``, initialize map by pairing atoms with same labels
             save_order (bool, optional):          if ``True``, reset atom order after performing atom isomorphism
             strict (bool, optional):             if ``False``, perform isomorphism ignoring electrons
+            check_labels (bool, optional):       if ``True``, atoms only match if their `label` attributes match
         """
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
@@ -588,12 +592,12 @@ class Fragment(Graph):
             return False
 
         # Do the full isomorphism comparison
-        result = Graph.is_isomorphic(self, other, initial_map, generate_initial_map, save_order=save_order, strict=strict)
+        result = Graph.is_isomorphic(self, other, initial_map, generate_initial_map, save_order=save_order, strict=strict, check_labels=check_labels)
         return result
 
-    def is_subgraph_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False):
+    def is_subgraph_isomorphic(self, other, initial_map=None, generate_initial_map=False, save_order=False, check_labels=False):
         """
-        Fragment's subgraph isomorphism check is done by first creating 
+        Fragment's subgraph isomorphism check is done by first creating
         a representative molecule of fragment, and then following same procedure
         of subgraph isomorphism check of `Molecule` object aganist `Group` object
         """
@@ -640,13 +644,13 @@ class Fragment(Graph):
                         continue
                     for i,key in enumerate(keys):
                         initial_map[key] = atmlist[i]
-                    if self.is_mapping_valid(other, initial_map, equivalent=False) and \
-                            Graph.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order):
+                    if self.is_mapping_valid(other, initial_map, equivalent=False, strict=True, check_labels=check_labels) and \
+                            Graph.is_subgraph_isomorphic(self, other, initial_map, save_order=save_order, check_labels=check_labels):
                         return True
                 else:
                     return False
             else:
-                if not self.is_mapping_valid(other, initial_map, equivalent=False):
+                if not self.is_mapping_valid(other, initial_map, equivalent=False, strict=True, check_labels=check_labels):
                     return False
 
         # Do the isomorphism comparison
@@ -657,7 +661,7 @@ class Fragment(Graph):
                 repr_mol_vertex = mapping[fragment_vertex]
                 new_initial_map[repr_mol_vertex] = initial_map[fragment_vertex]
 
-        result = Graph.is_subgraph_isomorphic(self.mol_repr, other, new_initial_map)
+        result = Graph.is_subgraph_isomorphic(self.mol_repr, other, new_initial_map, check_labels=check_labels)
         return result
 
     def is_atom_in_cycle(self, atom):
@@ -1403,13 +1407,14 @@ class Fragment(Graph):
                                                         save_order=save_order,
                                                         )
 
-    def is_identical(self, other, strict=True):
+    def is_identical(self, other, strict=True, check_labels=False):
         """
         Performs isomorphism checking, with the added constraint that atom IDs must match.
 
         Primary use case is tracking atoms in reactions for reaction degeneracy determination.
 
         Returns :data:`True` if two graphs are identical and :data:`False` otherwise.
+        If ``check_labels`` is ``True``, atoms only match if their `label` attributes also match.
         """
 
         if not isinstance(other, (Fragment, Molecule)):
@@ -1430,7 +1435,7 @@ class Fragment(Graph):
             for atom1, atom2 in zip(atom_list, other_list):
                 mapping[atom1] = atom2
 
-            return self.is_mapping_valid(other, mapping, equivalent=True, strict=strict)
+            return self.is_mapping_valid(other, mapping, equivalent=True, strict=strict, check_labels=check_labels)
         else:
             # The molecules don't have the same set of indices, so they are not identical
             return False
